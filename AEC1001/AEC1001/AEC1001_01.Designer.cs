@@ -437,7 +437,7 @@
             LBL0212.Name = "LBL0212";
             LBL0212.Size = new Size(380, 25);
             LBL0212.TabIndex = 95;
-            LBL0212.Text = "3DAlign DBText/MText ";
+            LBL0212.Text = "3D-Align DBText/MText ";
             // 
             // LBL0213
             // 
@@ -457,7 +457,7 @@
             LBL0214.Name = "LBL0214";
             LBL0214.Size = new Size(380, 25);
             LBL0214.TabIndex = 93;
-            LBL0214.Text = "3DAlign";
+            LBL0214.Text = "3D-Align";
             // 
             // LBL0215
             // 

@@ -47,6 +47,7 @@ using Autodesk.AutoCAD.Runtime;
 using Microsoft.VisualBasic;
 using System;
 using System.Diagnostics;
+using System.Runtime.ConstrainedExecution;
 using System.Windows.Forms;
 using AcOpenMode = Autodesk.AutoCAD.DatabaseServices.OpenMode;
 using Application = Autodesk.AutoCAD.ApplicationServices.Application; // Mehrdeutigkeit auflösen
@@ -278,7 +279,7 @@ namespace AEC1001
 
 
 
-                // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
         // frmAEC1001_01                                                       #0012 AEC1012
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
 
@@ -366,9 +367,16 @@ namespace AEC1001
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
 
 
+
+
+        // 3D-Align für Volumenkörper: Einmalig 3 Basispunkte wählen dann 3 Zielpunkte wählen, Körper wird kopiert und auf Ziel-
+        // punkten abgelegt. Anschließend wieder drei Zielpunkte wählen, Körper wird kopiert und auf Zielpunkten abgelegt ...
+
+
+        // 20260826-1600 #~~~2~~~~•~~~~3~~~~•~~~~4~~~~•~~~~5~~~~•~~~~6~~~~•~~~~7~~~~•~~~~H~~~~•~~~~9~~~~•~~~~0~~~~•~~~~1~~~~•~~~~Q
         private class SolidAlignJig : DrawJig
         {
-            private Entity? _preview;
+            private readonly Entity? _preview;
             private readonly Point3d _sOrg;
             private readonly CoordinateSystem3d _srcCS;
             private readonly Point3d _tOrg;
@@ -395,27 +403,30 @@ namespace AEC1001
                 return Matrix3d.AlignCoordinateSystem(_sOrg, _srcCS.Xaxis, _srcCS.Yaxis, _srcCS.Zaxis, _tOrg, tX, tY, tZ);
             }
 
-            protected override bool WorldDraw(Autodesk.AutoCAD.GraphicsInterface.WorldDraw d)
+            protected override bool WorldDraw(Autodesk.AutoCAD.GraphicsInterface.WorldDraw? d)
             {
                 if (_preview == null || d?.Geometry == null) return true;
+
                 d.Geometry.PushModelTransform(GetCurrentMatrix());
                 d.Geometry.Draw(_preview);
                 d.Geometry.PopModelTransform();
                 return true;
             }
 
-            protected override SamplerStatus Sampler(JigPrompts prompts)
+            protected override SamplerStatus Sampler(JigPrompts? prompts)
             {
                 if (prompts == null) return SamplerStatus.Cancel;
 
-                var opts = new JigPromptPointOptions($"\nZielpunkt für {(CurrentStep == 2 ? "X-Achse" : "Y-Achse")} angeben: ")
+                string promptMsg = CurrentStep == 2 ? "\nZielpunkt für X-Achse angeben: " : "\nZielpunkt für Y-Achse angeben: ";
+
+                JigPromptPointOptions opts = new(promptMsg)
                 {
                     UserInputControls = UserInputControls.Accept3dCoordinates,
                     UseBasePoint = true,
                     BasePoint = _tOrg
                 };
 
-                var res = prompts.AcquirePoint(opts);
+                PromptPointResult res = prompts.AcquirePoint(opts);
                 if (res.Status != PromptStatus.OK) return SamplerStatus.Cancel;
 
                 if (CurrentStep == 2) _tXPt = res.Value; else _tYPt = res.Value;
@@ -423,165 +434,192 @@ namespace AEC1001
             }
         }
 
-        [CommandMethod("AEC1014")]
-        public void AEC1014()
+        public class AEC1014Routine
         {
-            Document? doc = Application.DocumentManager.MdiActiveDocument;
-            if (doc == null) return;
-
-            Editor ed = doc.Editor;
-            // KORREKTUR: SystemToUse entfernt - Objekttyp wird direkt im String definiert
-            var entOpts = new PromptEntityOptions("\nVolumenkörper für Ausrichtung anklicken: ");
-            entOpts.SetRejectMessage("\nDas gewählte Objekt ist kein gültiger 3D-Volumenkörper!");
-            entOpts.AddAllowedClass(typeof(Solid3d), false);
-
-            var entRes = ed.GetEntity(entOpts);
-            if (entRes.Status != PromptStatus.OK) return;
-
-            try
+            [CommandMethod("AEC1014")]
+            public void AEC1014()
             {
+                Document? doc = Application.DocumentManager.MdiActiveDocument;
+                if (doc == null) return;
+
+                Editor ed = doc.Editor;
+
+                PromptEntityOptions entOpts = new("\nWählen Sie einen 3D-Volumenkörper für die Ausrichtung aus: ");
+                entOpts.SetRejectMessage("\nDas gewählte Objekt ist kein gültiger 3D-Volumenkörper!");
+                entOpts.AddAllowedClass(typeof(Solid3d), false);
+
+                PromptEntityResult entRes = ed.GetEntity(entOpts);
+                if (entRes.Status != PromptStatus.OK) return;
+
+                // Modernes 'using var' spart geschweifte Klammern für die gesamte Transaktion
                 using var tr = doc.Database.TransactionManager.StartTransaction();
-                if (tr.GetObject(entRes.ObjectId, AcOpenMode.ForRead) is not Solid3d solid) return;
-
-                // Quellpunkte einlesen
-                var p1 = ed.GetPoint("\nErsten Quellpunkt angeben (Basis): "); if (p1.Status != PromptStatus.OK) return;
-                var p2 = ed.GetPoint("\nZweiten Quellpunkt angeben (X-Achse): "); if (p2.Status != PromptStatus.OK) return;
-                var p3 = ed.GetPoint("\nDritten Quellpunkt angeben (Y-Achse): "); if (p3.Status != PromptStatus.OK) return;
-
-                // Quell-Koordinatensystem kompakt aufbauen
-                var sX = p1.Value.GetVectorTo(p2.Value).GetNormal();
-                var sZ = sX.CrossProduct(p1.Value.GetVectorTo(p3.Value)).GetNormal();
-                var srcCS = new CoordinateSystem3d(p1.Value, sX, sZ.CrossProduct(sX).GetNormal());
-
-                int loopCount = 0;
-                while (true)
+                try
                 {
-                    var tgtRes = ed.GetPoint("\nNächsten Ziel-Basispunkt angeben (oder ESC): ");
-                    if (tgtRes.Status != PromptStatus.OK) break;
+                    // KORREKTUR: Eindeutiger OpenMode-Pfad für .NET 10
+                    if (tr.GetObject(entRes.ObjectId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead) is not Solid3d solid) return;
 
-                    var jig = new SolidAlignJig(solid, p1.Value, srcCS, tgtRes.Value);
+                    // Quellpunkte einlesen
+                    PromptPointResult p1 = ed.GetPoint("\nErsten Quellpunkt angeben (Basis): "); if (p1.Status != PromptStatus.OK) return;
+                    PromptPointResult p2 = ed.GetPoint("\nZweiten Quellpunkt angeben (X-Achse): "); if (p2.Status != PromptStatus.OK) return;
+                    PromptPointResult p3 = ed.GetPoint("\nDritten Quellpunkt angeben (Y-Achse): "); if (p3.Status != PromptStatus.OK) return;
 
-                    jig.CurrentStep = 2; if (ed.Drag(jig).Status != PromptStatus.OK) { jig.CleanUp(); break; }
-                    jig.CurrentStep = 3; if (ed.Drag(jig).Status != PromptStatus.OK) { jig.CleanUp(); break; }
+                    // Quell-Koordinatensystem aufbauen
+                    Vector3d sX = p1.Value.GetVectorTo(p2.Value).GetNormal();
+                    Vector3d sZ = sX.CrossProduct(p1.Value.GetVectorTo(p3.Value)).GetNormal();
+                    CoordinateSystem3d srcCS = new(p1.Value, sX, sZ.CrossProduct(sX).GetNormal());
 
-                    var cloned = (Solid3d)solid.Clone();
-                    cloned.TransformBy(jig.GetCurrentMatrix());
-                    jig.CleanUp();
-
-                    var currentSpace = (BlockTableRecord)tr.GetObject(doc.Database.CurrentSpaceId, AcOpenMode.ForWrite);
-                    currentSpace.AppendEntity(cloned);
-                    tr.AddNewlyCreatedDBObject(cloned, true);
-
-                    ed.WriteMessage($"\nKopie {++loopCount} platziert.");
-                }
-                tr.Commit();
-            }
-            catch (System.Exception ex)
-            {
-                ed.WriteMessage($"\nFehler: {ex.Message}");
-            }
-        }
-
-
-
-
-        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
-        // frmAEC1001_01                                                       #0020 AEC1020
-        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
-
-
-
-
-        // 20260825-1100 #~~~2~~~~•~~~~3~~~~•~~~~4~~~~•~~~~5~~~~•~~~~6~~~~•~~~~7~~~~•~~~~H~~~~•~~~~9~~~~•~~~~0~~~~•~~~~1~~~~•~~~~Q
-
-
-        [CommandMethod("AEC1020")]
-        public void AEC1020()
-        {
-            var doc = Application.DocumentManager.MdiActiveDocument;
-            if (doc == null) return;
-
-            var ed = doc.Editor;
-
-            try
-            {
-                string targetLayerName = "";
-                using (var tr = doc.Database.TransactionManager.StartTransaction())
-                {
-                    if (tr.GetObject(doc.Database.Clayer, AcOpenMode.ForRead) is not LayerTableRecord lyRec) return;
-                    if (lyRec.IsLocked)
+                    int loopCount = 0;
+                    while (true)
                     {
-                        ed.WriteMessage($"\nAEC1020: Fehler - Der aktuelle Layer '{lyRec.Name}' ist gesperrt. Aktion abgebrochen.");
-                        return;
-                    }
-                    targetLayerName = lyRec.Name;
-                }
+                        PromptPointResult tgtRes = ed.GetPoint("\nNächsten Ziel-Basispunkt angeben (oder ESC): ");
+                        if (tgtRes.Status != PromptStatus.OK) break;
 
-                // 2. Auswahlfilter: Nur TEXT/MTEXT auf dem aktuellen Layer
-                var filter = new SelectionFilter(new[]
-                {
-                    new TypedValue((int)DxfCode.Operator, "<AND"),
-                    new TypedValue((int)DxfCode.LayerName, EscapeAutoCADWildcards(targetLayerName)),
-                    new TypedValue((int)DxfCode.Operator, "<OR"),
-                    new TypedValue((int)DxfCode.Start, "TEXT"),
-                    new TypedValue((int)DxfCode.Start, "MTEXT"),
-                    new TypedValue((int)DxfCode.Operator, "OR>"),
-                    new TypedValue((int)DxfCode.Operator, "AND>")
-                });
+                        SolidAlignJig jig = new(solid, p1.Value, srcCS, tgtRes.Value);
 
-                var selResult = ed.SelectAll(filter);
-                if (selResult.Status != PromptStatus.OK || selResult.Value == null)
-                {
-                    ed.WriteMessage($"\nAEC1020: Keine Texte auf dem aktuellen Layer '{targetLayerName}' gefunden.");
-                    return;
-                }
+                        jig.CurrentStep = 2; if (ed.Drag(jig).Status != PromptStatus.OK) { jig.CleanUp(); break; }
+                        jig.CurrentStep = 3; if (ed.Drag(jig).Status != PromptStatus.OK) { jig.CleanUp(); break; }
 
-                var textIds = selResult.Value.GetObjectIds();
-                if (textIds == null || textIds.Length == 0) return;
+                        if (solid.Clone() is not Solid3d cloned) { jig.CleanUp(); break; }
 
-                // 3. Sichtbarkeit umschalten
-                using (var tr = doc.Database.TransactionManager.StartTransaction())
-                {
-                    if (tr.GetObject(textIds[0], AcOpenMode.ForRead) is not Entity ersterText) return;
-                    bool neuerZustand = !ersterText.Visible;
-                    int zaehler = 0;
+                        cloned.TransformBy(jig.GetCurrentMatrix());
+                        jig.CleanUp();
 
-                    foreach (var id in textIds)
-                    {
-                        if (id.IsErased) continue;
-                        if (tr.GetObject(id, AcOpenMode.ForRead) is Entity ent && ent.Visible != neuerZustand)
+                        // KORREKTUR: Eindeutiger OpenMode-Pfad für den aktuellen Speicherbereich
+                        if (tr.GetObject(doc.Database.CurrentSpaceId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForWrite) is BlockTableRecord currentSpace)
                         {
-                            ent.UpgradeOpen();
-                            ent.Visible = neuerZustand;
-                            zaehler++;
+                            currentSpace.AppendEntity(cloned);
+                            tr.AddNewlyCreatedDBObject(cloned, true);
+                            ed.WriteMessage($"\n[AEC1014] Kopie {++loopCount} erfolgreich platziert.");
                         }
                     }
 
                     tr.Commit();
-                    ed.Regen();
-                    ed.WriteMessage($"\nAEC1020: {zaehler} Texte auf Layer '{targetLayerName}' wurden {(neuerZustand ? "sichtbar" : "unsichtbar")} geschaltet.");
+                }
+                catch (System.Exception ex)
+                {
+                    ed.WriteMessage($"\n[AEC1014] Fehler: {ex.Message}");
+                    tr.Abort();
                 }
             }
-            catch (System.Exception ex)
+
+
+
+
+
+
+            // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+            // frmAEC1001_01                                                       #0020 AEC1020
+            // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+
+
+
+
+            // 20260826-1400 #~~~2~~~~•~~~~3~~~~•~~~~4~~~~•~~~~5~~~~•~~~~6~~~~•~~~~7~~~~•~~~~H~~~~•~~~~9~~~~•~~~~0~~~~•~~~~1~~~~•~~~~Q
+            [CommandMethod("AEC1020")]
+            public void AEC1020()
             {
-                ed.WriteMessage($"\nAEC1020: Ein unerwarteter Fehler ist aufgetreten: {ex.Message}");
+                Document? doc = Application.DocumentManager.MdiActiveDocument;
+                if (doc == null) return;
+
+                Database db = doc.Database;
+                Editor ed = doc.Editor;
+
+                // 1. Blockreferenz vom Benutzer auswählen lassen
+                PromptEntityOptions peo = new("\nWählen Sie eine Blockreferenz aus: ");
+                peo.SetRejectMessage("\nDas gewählte Objekt ist kein Block.");
+                peo.AddAllowedClass(typeof(BlockReference), true);
+
+                PromptEntityResult per = ed.GetEntity(peo);
+                if (per.Status != PromptStatus.OK) return;
+
+                // Modernes 'using' ohne geschweifte Klammern für die Transaktion
+                using var trans = db.TransactionManager.StartTransaction();
+                try
+                {
+                    BlockReference? blockRef = trans.GetObject(per.ObjectId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead) as BlockReference;
+                    if (blockRef == null) return;
+
+                    BlockTableRecord? blockDef = trans.GetObject(blockRef.BlockTableRecord, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead) as BlockTableRecord;
+                    if (blockDef == null) return;
+
+                    BlockTable? bt = trans.GetObject(db.BlockTableId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead) as BlockTable;
+                    if (bt == null) return;
+
+                    BlockTableRecord? modelSpace = trans.GetObject(bt[BlockTableRecord.ModelSpace], Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead) as BlockTableRecord;
+                    if (modelSpace == null) return;
+
+                    // Layer-Sperrenprüfung aus der alten Variante übernommen
+                    if (trans.GetObject(blockRef.LayerId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead) is LayerTableRecord blockLayer && blockLayer.IsLocked)
+                    {
+                        ed.WriteMessage($"\n[AEC1020] Fehler: Layer '{blockLayer.Name}' ist gesperrt. Abbruch.");
+                        return;
+                    }
+
+                    bool? bestimmterNeuerZustand = null;
+                    int trefferZaehler = 0;
+
+                    // 2. Schleife durch Objekte im Block
+                    foreach (ObjectId entId in blockDef)
+                    {
+                        DBObject obj = trans.GetObject(entId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
+                        if (obj is not DBPoint bPoint) continue;
+
+                        // Koordinaten-Transformation in den echten Modellbereich
+                        Point3d wcsPointPosition = bPoint.Position.TransformBy(blockRef.BlockTransform);
+
+                        // 3. Im Modellbereich nach Texten suchen (Toleranzprüfung < 0.1)
+                        foreach (ObjectId msId in modelSpace)
+                        {
+                            if (msId.IsErased) continue;
+                            DBObject msObj = trans.GetObject(msId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
+
+                            // Ruft die ausgelagerte, klammeroptimierte Hilfsmethode auf
+                            UpdateTextVisibility(msObj, wcsPointPosition, ref bestimmterNeuerZustand, ref trefferZaehler);
+                        }
+                    }
+
+                    trans.Commit();
+                    ed.Regen();
+
+                    string statusInfo = bestimmterNeuerZustand == true ? "sichtbar" : "unsichtbar";
+                    ed.WriteMessage(trefferZaehler > 0
+                        ? $"\n[AEC1020] Erfolg! {trefferZaehler} Texte wurden {statusInfo} geschaltet.\n"
+                        : "\n[AEC1020] Keine passenden Texte an den Koordinaten gefunden.\n");
+                }
+                catch (System.Exception ex)
+                {
+                    ed.WriteMessage("\n[AEC1020] Kritischer Fehler: " + ex.Message);
+                    trans.Abort();
+                }
+            }
+
+            // Hilfsmethode zur Auslagerung der Text-Prüfung (spart geschweifte Klammern)
+            private void UpdateTextVisibility(DBObject obj, Point3d targetPos, ref bool? newStatus, ref int counter)
+            {
+                if (obj is DBText txt && targetPos.DistanceTo(txt.Position) < 0.1)
+                {
+                    newStatus ??= !txt.Visible;
+                    if (txt.Visible == newStatus) return;
+
+                    txt.UpgradeOpen();
+                    txt.Visible = (bool)newStatus;
+                    counter++;
+                }
+                else if (obj is MText mtxt && targetPos.DistanceTo(mtxt.Location) < 0.1)
+                {
+                    newStatus ??= !mtxt.Visible;
+                    if (mtxt.Visible == newStatus) return;
+
+                    mtxt.UpgradeOpen();
+                    mtxt.Visible = (bool)newStatus;
+                    counter++;
+                }
             }
         }
 
-        private string EscapeAutoCADWildcards(string input)
-        {
-            if (string.IsNullOrEmpty(input)) return input;git
-            const string wildcards = "#@.*?[,`~";
-            var sb = new System.Text.StringBuilder(input.Length * 2);
-            foreach (char c in input)
-            {
-                if (wildcards.Contains(c)) sb.Append('`');
-                sb.Append(c);
-            }
-            return sb.ToString(); 'zzz'
-        }
     }
 }
+
 
 
 
