@@ -1,0 +1,437 @@
+# AEC1001_01
+
+
+------------
+# AEC1001_01
+------------
+
+
+
+'20260822-1800 #~~~2~~~~•~~~~3~~~~•~~~~4~~~~•~~~~5~~~~•~~~~6~~~~•~~~~7~~~~•~~~~H~~~~•~~~~9~~~~•~~~~0~~~~•~~~~1~~~~•~~~~Q
+
+<CommandMethod("AEC0021")>
+Public Sub AEC0021()
+    Dim doc As Document = Application.DocumentManager.MdiActiveDocument
+    Dim db As Database = doc.Database
+    Dim ed As Editor = doc.Editor
+
+    Try
+        ' =================================================================
+        ' FÜR .NET 10 OPTIMIERT: ASYNCHRONER TIMEOUT-DIALOG (WINFORMS)
+        ' =================================================================
+
+        Dim infoForm As New System.Windows.Forms.Form()
+        infoForm.Text = "AEC0021 - Information"
+        infoForm.Size = New System.Drawing.Size(480, 160)
+        infoForm.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent
+        infoForm.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog
+        infoForm.MaximizeBox = False
+        infoForm.MinimizeBox = False
+        infoForm.ShowInTaskbar = False
+
+        Dim lblText As New System.Windows.Forms.Label()
+        lblText.Text = "Ursprung Aktuelles BKS   X - R i c h t u n g   !" & vbCrLf & vbCrLf &
+                           "Knotennummerierung   1   3   5   7   9   …" & vbCrLf & vbCrLf &
+                           "Dieses Fenster schließt sich automatisch in 7.5 Sekunden."
+        lblText.Dock = System.Windows.Forms.DockStyle.Fill
+        lblText.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        lblText.Font = New System.Drawing.Font("Segoe UI", 10, System.Drawing.FontStyle.Regular)
+        infoForm.Controls.Add(lblText)
+
+        Dim formTimer As New System.Windows.Forms.Timer()
+        formTimer.Interval = 7500
+        AddHandler formTimer.Tick, Sub(sender, e)
+                                       formTimer.Stop()
+                                       infoForm.Close()
+                                       formTimer.Dispose()
+                                   End Sub
+        formTimer.Start()
+
+        ' Nutzen des Window-Wrappers (Klasse am Ende von Teil 2)
+        Dim acadWindow As New AutoCADWindowWrapper(Application.MainWindow.Handle)
+        infoForm.ShowDialog(acadWindow)
+        infoForm.Dispose()
+
+        ' 1. Abfrage der Texthöhe (Standardwert starr auf 0.035 gesetzt)
+        Dim finaleHoehe As Double = 0.035
+        Dim pdo As New PromptDoubleOptions(String.Format(vbLf & "Absolute Texthöhe eingeben <{0}>: ", finaleHoehe))
+        pdo.AllowNone = True
+        pdo.AllowNegative = False
+        pdo.AllowZero = False
+        Dim pdr As PromptDoubleResult = ed.GetDouble(pdo)
+
+        If pdr.Status = PromptStatus.OK Then
+            finaleHoehe = pdr.Value
+        ElseIf pdr.Status = PromptStatus.Cancel Then
+            Return
+        End If
+
+        ' 2. Auswahl der Blockreferenz
+        Dim peoBlock As New PromptEntityOptions(vbLf & "Block auswählen, der die Polylinien und Punkte enthält:")
+        peoBlock.SetRejectMessage("Es muss eine Blockreferenz sein.")
+        peoBlock.AddAllowedClass(GetType(BlockReference), True)
+        Dim perBlock As PromptEntityResult = ed.GetEntity(peoBlock)
+        If perBlock.Status <> PromptStatus.OK Then Return
+
+        ' BKS-Matrizen für die Sortierung holen
+        Dim bksMatrix As Matrix3d = ed.CurrentUserCoordinateSystem
+        Dim weltInBksMatrix As Matrix3d = bksMatrix.Inverse()
+
+        Using tr As Transaction = db.TransactionManager.StartTransaction()
+            Dim blkRef As BlockReference = CType(tr.GetObject(perBlock.ObjectId, OpenMode.ForRead), BlockReference)
+
+            ' Ermittelt die Layer-Daten des ausgewählten Blocks
+            Dim blockLayerId As ObjectId = blkRef.LayerId
+            Dim blockDef As BlockTableRecord = CType(tr.GetObject(blkRef.BlockTableRecord, OpenMode.ForRead), BlockTableRecord)
+            Dim blockTransform As Matrix3d = blkRef.BlockTransform
+
+            Dim allePunkteWcs As New List(Of Point3d)()
+            Dim gefundenePolylinienWcs As New List(Of Curve)()
+
+            ' Geometrien extrahieren und ins WCS transformieren
+            For Each id As ObjectId In blockDef
+                Dim ent As Entity = CType(tr.GetObject(id, OpenMode.ForRead), Entity)
+
+                If TypeOf ent Is DBPoint Then
+                    Dim lokPt As Point3d = CType(ent, DBPoint).Position
+                    allePunkteWcs.Add(lokPt.TransformBy(blockTransform))
+
+                ElseIf TypeOf ent Is Autodesk.AutoCAD.DatabaseServices.Polyline OrElse
+                       TypeOf ent Is Autodesk.AutoCAD.DatabaseServices.Polyline2d OrElse
+                       TypeOf ent Is Autodesk.AutoCAD.DatabaseServices.Polyline3d Then
+
+                    Dim wcsKurve As Curve = CType(ent.Clone(), Curve)
+                    wcsKurve.TransformBy(blockTransform)
+                    gefundenePolylinienWcs.Add(wcsKurve)
+                End If
+            Next
+
+            ' Validierung der Kurvenanzahl im Block
+            If gefundenePolylinienWcs.Count <> 2 Then
+                ed.WriteMessage(String.Format(vbLf & "Fehler: Der Block muss EXAKT zwei Polylinien enthalten! (Gefunden: {0})", gefundenePolylinienWcs.Count))
+
+                For Each c As Curve In gefundenePolylinienWcs
+                    c.Dispose()
+                Next
+                tr.Abort()
+                Return
+            End If
+
+            Dim polyA As Curve = gefundenePolylinienWcs(0)
+            Dim polyB As Curve = gefundenePolylinienWcs(1)
+
+            Dim punkteA_Raw As New List(Of Tuple(Of Point3d, Double))()
+            Dim punkteB_Raw As New List(Of Tuple(Of Point3d, Double))()
+
+            ' Punkte mathematisch der jeweils näheren Linie zuordnen (basiert stabil auf BKS-X)
+            For Each ptWcs As Point3d In allePunkteWcs
+                Try
+                    Dim ptAufA As Point3d = polyA.GetClosestPointTo(ptWcs, False)
+                    Dim ptAufB As Point3d = polyB.GetClosestPointTo(ptWcs, False)
+
+                    Dim distA As Double = ptWcs.DistanceTo(ptAufA)
+                    Dim distB As Double = ptWcs.DistanceTo(ptAufB)
+
+                    Dim ptBks As Point3d = ptWcs.TransformBy(weltInBksMatrix)
+
+                    If distA <= distB Then
+                        punkteA_Raw.Add(New Tuple(Of Point3d, Double)(ptWcs, ptBks.X))
+                    Else
+                        punkteB_Raw.Add(New Tuple(Of Point3d, Double)(ptWcs, ptBks.X))
+                    End If
+                Catch
+                    ' Ignoriere vereinzelte Rechenfehler bei defekter Geometrie
+                End Try
+            Next
+
+            ' Sortierung nach BKS-X (von links nach rechts)
+            Dim punkteA As List(Of Point3d) = punkteA_Raw.OrderBy(Function(x) x.Item2).Select(Function(x) x.Item1).ToList()
+            Dim punkteB As List(Of Point3d) = punkteB_Raw.OrderBy(Function(x) x.Item2).Select(Function(x) x.Item1).ToList()
+
+            ' Bestimmung von Basis- und entfernter Linie über echten BKS-Y-Schnitt
+            Dim avgYA As Double = If(punkteA.Count > 0, punkteA.Average(Function(p) p.TransformBy(weltInBksMatrix).Y), 0.0)
+            Dim avgYB As Double = If(punkteB.Count > 0, punkteB.Average(Function(p) p.TransformBy(weltInBksMatrix).Y), 0.0)
+
+            Dim basisPunkte As List(Of Point3d) = If(avgYA <= avgYB, punkteA, punkteB)
+            Dim entferntePunkte As List(Of Point3d) = If(avgYA <= avgYB, punkteB, punkteA)
+            Dim basisPoly As Curve = If(avgYA <= avgYB, polyA, polyB)
+            Dim entferntPoly As Curve = If(avgYA <= avgYB, polyB, polyA)
+
+            ' Arbeitsbereich für Schreibzugriff öffnen
+            Dim currentSpace As BlockTableRecord = CType(tr.GetObject(db.CurrentSpaceId, OpenMode.ForWrite), BlockTableRecord)
+
+            ' Texte schreiben: Basis-Polylinienpunkte (Ungerade Nummern: 1, 3, 5...)
+            Dim zaehlerBasis As Integer = 1
+            For Each weltPos In basisPunkte
+                Dim rotWinkel As Double = BerechneKurvenWinkel(basisPoly, weltPos, bksMatrix)
+                ErstelleEchtenText(currentSpace, tr, db, weltPos, zaehlerBasis.ToString(), finaleHoehe, rotWinkel, blockLayerId)
+                zaehlerBasis += 2
+            Next
+
+            ' Texte schreiben: Entfernte Polylinienpunkte (Gerade Nummern: 2, 4, 6...)
+            Dim zaehlerEntfernt As Integer = 2
+            For Each weltPos In entferntePunkte
+                Dim rotWinkel As Double = BerechneKurvenWinkel(entferntPoly, weltPos, bksMatrix)
+                ErstelleEchtenText(currentSpace, tr, db, weltPos, zaehlerEntfernt.ToString(), finaleHoehe, rotWinkel, blockLayerId)
+                zaehlerEntfernt += 2
+            Next
+
+            ' Speicherbereinigung der geklonten Kurven
+            polyA.Dispose()
+            polyB.Dispose()
+
+            tr.Commit()
+        End Using
+
+        ed.WriteMessage(vbLf & "AEC0021 erfolgreich ausgeführt.")
+
+    Catch ex As System.Exception
+        ed.WriteMessage(vbLf & "Fehler in AEC0021: " & ex.Message)
+    End Try
+End Sub
+
+''' <summary>
+''' Berechnet den Tangentenwinkel der Kurve an der gegebenen Position im aktuellen BKS.
+''' </summary>
+Private Function BerechneKurvenWinkel(curve As Curve, weltPos As Point3d, bksMatrix As Matrix3d) As Double
+    Try
+        Dim param As Double = curve.GetParameterAtPoint(weltPos)
+        Dim ableitung As Vector3d = curve.GetFirstDerivative(param)
+        Dim bksAbleitung As Vector3d = ableitung.TransformBy(bksMatrix.Inverse())
+        Dim winkel As Double = Math.Atan2(bksAbleitung.Y, bksAbleitung.X)
+
+        If winkel > Math.PI / 2 OrElse winkel <= -Math.PI / 2 Then
+            winkel += Math.PI
+        End If
+
+        Return winkel
+    Catch
+        Return 0.0
+    End Try
+End Function
+
+''' <summary>
+''' Erstellt ein DBText-Objekt auf dem Layer des Blocks mit zentrierter Ausrichtung und fester blauer Farbe.
+''' </summary>
+Private Sub ErstelleEchtenText(space As BlockTableRecord, tr As Transaction, db As Database, position As Point3d, inhalt As String, hoehe As Double, winkel As Double, layerId As ObjectId)
+    Dim txt As New DBText()
+    txt.SetDatabaseDefaults()
+    txt.Position = position
+    txt.TextString = inhalt
+    txt.Height = hoehe
+    txt.Rotation = winkel
+    txt.LayerId = layerId
+
+    ' AUSSCHLIESSLICHE ÄNDERUNG: Feste blaue Farbe zuweisen (ColorIndex 5)
+    txt.Color = Autodesk.AutoCAD.Colors.Color.FromColorIndex(Autodesk.AutoCAD.Colors.ColorMethod.ByColor, 5)
+
+    txt.Justify = AttachmentPoint.MiddleCenter
+    txt.AlignmentPoint = position
+
+    space.AppendEntity(txt)
+    tr.AddNewlyCreatedDBObject(txt, True)
+End Sub
+
+''' <summary>
+''' Erforderlicher Window-Wrapper für das native AutoCAD-Hauptfenster (WinForms-Kompatibilität)
+''' </summary>
+Public Class AutoCADWindowWrapper
+    Implements System.Windows.Forms.IWin32Window
+
+    Private _hwnd As IntPtr
+
+    Public Sub New(handle As IntPtr)
+        _hwnd = handle
+    End Sub
+
+    Public ReadOnly Property Handle As IntPtr Implements System.Windows.Forms.IWin32Window.Handle
+        Get
+            Return _hwnd
+        End Get
+    End Property
+End Class
+
+
+
+'20260825-0800 #~~~2~~~~•~~~~3~~~~•~~~~4~~~~•~~~~5~~~~•~~~~6~~~~•~~~~7~~~~•~~~~H~~~~•~~~~9~~~~•~~~~0~~~~•~~~~1~~~~•~~~~Q
+
+20260825#0741 Form1 C#
+
+
+Der Standardcode für eine Form1 in einer Windows Forms Anwendung (C#) besteht in der Regel aus zwei Teilen: der Logik-Datei (Form1.cs) und der vom Designer generierten Layout-Datei(Form1.Designer.cs).
+Hier ist der typische, minimale Code für die Logik-Datei:
+
+1. Der Code in Form1.cs
+
+Dieser Code enthält die Logik und die Ereignisse (z. B. Button-Klicks) für deine Form.
+using System;
+using System.Windows.Forms;
+
+namespace MeinWindowsFormsProjekt
+
+{
+    public partial class Form1 : Form
+    {
+        // Der Konstruktor der Form
+
+        public Form1()
+
+        {
+
+            // Initialisiert alle visuellen Komponenten aus dem Designer
+
+            InitializeComponent(); 
+
+        }
+
+
+
+        // Beispiel für ein Klick-Ereignis (wird erstellt, wenn du im Designer doppelt auf einen Button klickst)
+
+        private void myButton_Click(object sender, EventArgs e)
+
+        {
+
+            MessageBox.Show("Hallo Welt!");
+
+        }
+
+    }
+
+}
+
+2. Der Code in Program.cs (Der Startpunkt)
+
+Damit Form1 überhaupt angezeigt wird, startet Visual Studio die Form in der Program.cs:
+
+using System;
+
+using System.Windows.Forms;
+
+
+
+namespace MeinWindowsFormsProjekt
+
+{
+
+    static class Program
+
+    {
+
+        [STAThread]
+
+        static void Main()
+
+        {
+
+            Application.EnableVisualStyles();
+
+            Application.SetCompatibleTextRenderingDefault(false);
+
+            
+
+            // Hier wird Form1 gestartet
+
+            Application.Run(new Form1()); 
+
+        }
+
+    }
+
+}
+
+Wichtige Hinweise
+
+
+
+partial class: Das Schlüsselwort partial bedeutet, dass der Code dieser Klasse aufgeteilt ist. Der Code für das Aussehen (Größe, Knöpfe, Textboxen) liegt versteckt in der Datei Form1.Designer.cs und wird automatisch von Visual Studio verwaltet.
+InitializeComponent(): Diese Methode darf niemals gelöscht werden, da sonst die Form beim Starten leer bleibt oder abstürzt.
+Möchtest du eine bestimmte Funktion hinzufügen (z. B. Daten auslesen oder ein neues Fenster öffnen), oder suchst du nach einem Code für ein bestimmtes Steuerelement?
+
+
+
+20260825#0742
+
+
+
+Um Code direkt beim Starten (Laden) der Form auszuführen, fügst du das sogenannte Load-Ereignishinzu.
+
+In Windows Forms ist es wichtig, dass dieses Ereignis sowohl im Code existiert als auch mit der Form verknüpft ist.
+
+Der Code in Form1.cs
+
+So sieht deine Datei aus, wenn das Load-Ereignis (hier heißt es Form1_Load) hinzugefügt wurde. Ich habe auch direkt eingebaut, dass dort deine Routine AEC1021() aufgerufen wird:
+
+using System;
+
+using System.Windows.Forms;
+
+
+
+namespace MeinWindowsFormsProjekt
+
+{
+
+    public partial class Form1 : Form
+
+    {
+
+        public Form1()
+
+        {
+
+            InitializeComponent(); 
+
+        }
+
+
+
+        // Diese Routine wird automatisch aufgerufen, wenn die Form geladen wird
+
+        private void Form1_Load(object sender, EventArgs e)
+
+        {
+
+            // Beispiel: Hier wird deine Routine direkt beim Start ausgeführt
+
+            AEC1021(); 
+
+        }
+
+
+
+        // Deine bestehende Routine
+
+        private void AEC1021()
+
+        {
+
+            MessageBox.Show("Die Routine AEC1021 wurde beim Laden der Form aufgerufen!");
+
+        }
+
+    }
+
+}
+
+Ganz wichtig: Das Ereignis im Designer verknüpfen
+
+Damit Windows Forms weiß, dass es diese Form1_Load-Methode beim Starten ausführen soll, musst du sie verknüpfen. Am schnellsten geht das so:
+
+
+
+Öffne die Design-Ansicht von Form1 (wo du die Buttons siehst).
+Mach einen Doppelklick auf eine freie Stelle der Form (nicht auf einen Button oder eine Textbox).
+Visual Studio springt automatisch in den Code und erstellt die Methode Form1_Load. Du musst dann nur noch deinen Code hineinschreiben.
+Soll die Routine beim Starten bestimmte Daten vorbereiten (z. B. eine Datenbank laden oder Textfelder ausfüllen), oder möchtest du noch ein anderes Element steuern?
+
+
+
+
+
+
+
+
+
+
+

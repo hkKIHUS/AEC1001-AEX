@@ -1,0 +1,137 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "AEC1001/1.0.0": {
+        "dependencies": {
+          "AutoCAD.NET": "26.0.0",
+          "AutoCAD.NET.Core": "26.0.0",
+          "AutoCAD.NET.Model": "26.0.0",
+          "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.26100.57"
+        },
+        "runtime": {
+          "AEC1001.dll": {}
+        }
+      },
+      "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.26100.57": {
+        "runtime": {
+          "Microsoft.Windows.SDK.NET.dll": {
+            "assemblyVersion": "10.0.26100.38",
+            "fileVersion": "10.0.26100.55"
+          },
+          "WinRT.Runtime.dll": {
+            "assemblyVersion": "2.2.0.0",
+            "fileVersion": "2.2.0.48161"
+          }
+        }
+      },
+      "AutoCAD.NET/26.0.0": {
+        "dependencies": {
+          "AutoCAD.NET.Core": "26.0.0"
+        },
+        "runtime": {
+          "lib/net10.0/AcCui.dll": {
+            "assemblyVersion": "26.0.0.0",
+            "fileVersion": "26.0.60.0"
+          },
+          "lib/net10.0/AcDx.dll": {
+            "assemblyVersion": "26.0.0.0",
+            "fileVersion": "26.0.60.0"
+          },
+          "lib/net10.0/AcMgd.dll": {
+            "assemblyVersion": "26.0.0.0",
+            "fileVersion": "26.0.60.0"
+          },
+          "lib/net10.0/AcMr.dll": {
+            "assemblyVersion": "26.0.0.0",
+            "fileVersion": "26.0.60.0"
+          },
+          "lib/net10.0/AcSeamless.dll": {
+            "assemblyVersion": "26.0.0.0",
+            "fileVersion": "26.0.60.0"
+          },
+          "lib/net10.0/AcTcMgd.dll": {
+            "assemblyVersion": "26.0.0.0",
+            "fileVersion": "26.0.60.0"
+          },
+          "lib/net10.0/AcWindows.dll": {
+            "assemblyVersion": "26.0.0.0",
+            "fileVersion": "26.0.60.0"
+          },
+          "lib/net10.0/AdUIMgd.dll": {
+            "assemblyVersion": "26.0.0.0",
+            "fileVersion": "26.0.60.0"
+          },
+          "lib/net10.0/AdUiPalettes.dll": {
+            "assemblyVersion": "26.0.0.0",
+            "fileVersion": "26.0.60.0"
+          },
+          "lib/net10.0/AdWindows.dll": {
+            "assemblyVersion": "5.4.3.1",
+            "fileVersion": "5.4.3.1"
+          }
+        }
+      },
+      "AutoCAD.NET.Core/26.0.0": {
+        "dependencies": {
+          "AutoCAD.NET.Model": "26.0.0"
+        },
+        "runtime": {
+          "lib/net10.0/AcCoreMgd.dll": {
+            "assemblyVersion": "26.0.0.0",
+            "fileVersion": "26.0.60.0"
+          }
+        }
+      },
+      "AutoCAD.NET.Model/26.0.0": {
+        "runtime": {
+          "lib/net10.0/AcDbMgd.dll": {
+            "assemblyVersion": "26.0.0.0",
+            "fileVersion": "26.0.60.0"
+          },
+          "lib/net10.0/acdbmgdbrep.dll": {
+            "assemblyVersion": "26.0.0.0",
+            "fileVersion": "26.0.60.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "AEC1001/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.26100.57": {
+      "type": "runtimepack",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "AutoCAD.NET/26.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-nrlnNzMKtEORpt5IylGsDsl2Te0rqp/1SSTtavjZP5e70TXU7R/7VVN8Nzxohq+KjkhGGJWhVxwQLyCYp+csGA==",
+      "path": "autocad.net/26.0.0",
+      "hashPath": "autocad.net.26.0.0.nupkg.sha512"
+    },
+    "AutoCAD.NET.Core/26.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-6NUDKCPUOcWdCFfRZcEIhbCFsUF1B3yN6qKwffwGx5kzMdL4oLSQ3cafjdwq5TLMjPzukOgURNdiG2Sp8vkuWg==",
+      "path": "autocad.net.core/26.0.0",
+      "hashPath": "autocad.net.core.26.0.0.nupkg.sha512"
+    },
+    "AutoCAD.NET.Model/26.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-QWOO17YAk0aC/iYLkE52eUU6wg9HDoao8um7BbvRY89WbUHs3YsURWWhFUE/hQRIEU1NyO2dSy6/uuNbe2/oIg==",
+      "path": "autocad.net.model/26.0.0",
+      "hashPath": "autocad.net.model.26.0.0.nupkg.sha512"
+    }
+  }
+}

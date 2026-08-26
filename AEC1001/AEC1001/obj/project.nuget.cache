@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "dgSpecHash": "Gpra7TpuPtE=",
+  "success": true,
+  "projectFilePath": "E:\\AEC1001 AEX\\AEC1001\\AEC1001\\AEC1001.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Knierim\\.nuget\\packages\\autocad.net\\26.0.0\\autocad.net.26.0.0.nupkg.sha512",
+    "C:\\Users\\Knierim\\.nuget\\packages\\autocad.net.core\\26.0.0\\autocad.net.core.26.0.0.nupkg.sha512",
+    "C:\\Users\\Knierim\\.nuget\\packages\\autocad.net.model\\26.0.0\\autocad.net.model.26.0.0.nupkg.sha512",
+    "C:\\Users\\Knierim\\.nuget\\packages\\microsoft.windows.sdk.net.ref\\10.0.26100.57\\microsoft.windows.sdk.net.ref.10.0.26100.57.nupkg.sha512"
+  ],
+  "logs": []
+}
