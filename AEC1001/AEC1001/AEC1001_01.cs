@@ -117,6 +117,9 @@ namespace AEC1001
 
 
 
+        // Öffne FrmAEC0001.exe
+
+
         // 20260825-1100 #~~~2~~~~•~~~~3~~~~•~~~~4~~~~•~~~~5~~~~•~~~~6~~~~•~~~~7~~~~•~~~~H~~~~•~~~~9~~~~•~~~~0~~~~•~~~~1~~~~•~~~~Q
         [CommandMethod("AEC1001")]
         public void AEC1001()
@@ -153,63 +156,73 @@ namespace AEC1001
 
 
 
-
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
         // frmAEC1001_01                                                       #0002 AEC1002
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
 
+
+
+
+        // LayerLeer aktuell
+
+
         [CommandMethod("AEC1002")]
         public void AEC1002()
         {
-            var doc = Application.DocumentManager.MdiActiveDocument;
+            Document? doc = Application.DocumentManager.MdiActiveDocument;
             if (doc == null) return;
+
+            Database db = doc.Database;
+            Editor ed = doc.Editor;
 
             string layerName = "000#90001#0001-00000#0000-01 LayerLeer";
             ObjectId layerId = ObjectId.Null;
 
+            // Modernes 'using' ohne geschweifte Klammern für die Transaktion
+            using var trans = db.TransactionManager.StartTransaction();
             try
             {
-                using (var trans = doc.Database.TransactionManager.StartTransaction())
+                // KORREKTUR: Eindeutiger OpenMode-Pfad für .NET 10
+                if (trans.GetObject(db.LayerTableId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead) is not LayerTable lt) return;
+
+                if (lt.Has(layerName))
                 {
-                    if (trans.GetObject(doc.Database.LayerTableId, AcOpenMode.ForRead) is not LayerTable lt) return;
+                    // KORREKTUR: Eindeutiger OpenMode-Pfad für .NET 10
+                    if (trans.GetObject(lt[layerName], Autodesk.AutoCAD.DatabaseServices.OpenMode.ForWrite) is not LayerTableRecord ltr) return;
 
-                    if (lt.Has(layerName))
+                    // Vorab-Prüfung, ob der Layer bereits der aktuelle Layer ist
+                    if (db.Clayer == ltr.ObjectId)
                     {
-                        if (trans.GetObject(lt[layerName], AcOpenMode.ForWrite) is not LayerTableRecord ltr) return;
-
-                        // NEU: Vorab-Prüfung, ob der Layer bereits der aktuelle Layer ist
-                        if (doc.Database.Clayer == ltr.ObjectId)
-                        {
-                            doc.Editor.WriteMessage($"\nHinweis: Der Layer '{layerName}' ist bereits der aktuelle Layer.");
-                            return; // Beendet die Routine sauber ohne Fehler
-                        }
-
-                        // Eigenschaften ändern
-                        ltr.IsFrozen = false;
-                        ltr.IsLocked = false;
-                        ltr.IsOff = false;
-
-                        layerId = ltr.ObjectId;
-                        trans.Commit();
-                    }
-                    else
-                    {
-                        doc.Editor.WriteMessage($"\nLayer '{layerName}' nicht gefunden.");
+                        ed.WriteMessage($"\n[AEC1002] Hinweis: Der Layer '{layerName}' ist bereits der aktuelle Layer.");
                         return;
                     }
+
+                    // Eigenschaften ändern/reaktivieren
+                    ltr.IsFrozen = false;
+                    ltr.IsLocked = false;
+                    ltr.IsOff = false;
+
+                    layerId = ltr.ObjectId;
+                    trans.Commit();
+                }
+                else
+                {
+                    ed.WriteMessage($"\n[AEC1002] Layer '{layerName}' nicht gefunden.");
+                    return;
                 }
 
-                // Layer-Wechsel nach dem Commit ausführen
+                // Layer-Wechsel sicher nach dem Commit ausführen
                 if (layerId != ObjectId.Null)
                 {
-                    doc.Database.Clayer = layerId;
-                    doc.Editor.Regen();
-                    doc.Editor.WriteMessage($"\nKommando AEC1002 ausgeführt: Layer '{layerName}' ist nun AKTUELL.");
+                    db.Clayer = layerId;
+                    ed.Regen();
+                    ed.WriteMessage($"\n[AEC1002] {"".PadLeft(15)} L a y e r L e e r {"".PadLeft(10)} aufgetaut, entsperrt und als AKTUELL gesetzt.");
                 }
             }
             catch (System.Exception ex)
             {
-                doc.Editor.WriteMessage($"\nFehler in AEC1002: {ex.Message}");
+                ed.WriteMessage($"\n[AEC1002] Fehler: {ex.Message}");
+                trans.Abort();
             }
         }
 
@@ -220,61 +233,145 @@ namespace AEC1001
         // frmAEC1001_01                                                       #0003 AEC1003
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
 
+
+
+
+        // Layer 0 aktuell
+
+
         [CommandMethod("AEC1003")]
         public void AEC1003()
         {
-            var doc = Application.DocumentManager.MdiActiveDocument;
+            Document? doc = Application.DocumentManager.MdiActiveDocument;
             if (doc == null) return;
 
-            // KORREKTUR: Layer auf "0" fixiert
+            Database db = doc.Database;
+            Editor ed = doc.Editor;
+
             string layerName = "0";
             ObjectId layerId = ObjectId.Null;
 
+            // Modernes 'using' ohne geschweifte Klammern für die Transaktion
+            using var trans = db.TransactionManager.StartTransaction();
             try
             {
-                using (var trans = doc.Database.TransactionManager.StartTransaction())
+                // KORREKTUR: Eindeutiger OpenMode-Pfad für .NET 10
+                if (trans.GetObject(db.LayerTableId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead) is not LayerTable lt) return;
+
+                if (lt.Has(layerName))
                 {
-                    if (trans.GetObject(doc.Database.LayerTableId, AcOpenMode.ForRead) is not LayerTable lt) return;
+                    // KORREKTUR: Eindeutiger OpenMode-Pfad für .NET 10
+                    if (trans.GetObject(lt[layerName], Autodesk.AutoCAD.DatabaseServices.OpenMode.ForWrite) is not LayerTableRecord ltr) return;
 
-                    if (lt.Has(layerName))
+                    // Vorab-Prüfung, ob der Layer bereits der aktuelle Layer ist
+                    if (db.Clayer == ltr.ObjectId)
                     {
-                        if (trans.GetObject(lt[layerName], AcOpenMode.ForWrite) is not LayerTableRecord ltr) return;
-
-                        // Vorab-Prüfung, ob der Layer "0" bereits der aktuelle Layer ist
-                        if (doc.Database.Clayer == ltr.ObjectId)
-                        {
-                            doc.Editor.WriteMessage($"\nHinweis: Der Layer '{layerName}' ist bereits der aktuelle Layer.");
-                            return;
-                        }
-
-                        // Eigenschaften aufheben
-                        ltr.IsFrozen = false;
-                        ltr.IsLocked = false;
-                        ltr.IsOff = false;
-
-                        layerId = ltr.ObjectId;
-                        trans.Commit();
-                    }
-                    else
-                    {
-                        doc.Editor.WriteMessage($"\nLayer '{layerName}' nicht gefunden.");
+                        ed.WriteMessage($"\n[AEC1003] Hinweis: Der Layer '{layerName}' ist bereits der aktuelle Layer.");
                         return;
                     }
+
+                    // Eigenschaften ändern/reaktivieren
+                    ltr.IsFrozen = false;
+                    ltr.IsLocked = false;
+                    ltr.IsOff = false;
+
+                    layerId = ltr.ObjectId;
+                    trans.Commit();
+                }
+                else
+                {
+                    ed.WriteMessage($"\n[AEC1003] Layer '{layerName}' nicht gefunden.");
+                    return;
                 }
 
-                // Layer-Wechsel nach dem Commit ausführen
+                // Layer-Wechsel sicher nach dem Commit ausführen
                 if (layerId != ObjectId.Null)
                 {
-                    doc.Database.Clayer = layerId;
-                    doc.Editor.Regen();
-                    doc.Editor.WriteMessage($"\nKommando AEC1003 ausgeführt: Layer '{layerName}' ist nun AKTUELL.");
+                    db.Clayer = layerId;
+                    ed.Regen();
+                    ed.WriteMessage($"\n[AEC1003] {"".PadLeft(15)} L a y e r N u l l {"".PadLeft(10)} aufgetaut, entsperrt und als AKTUELL gesetzt.");
                 }
             }
             catch (System.Exception ex)
             {
-                doc.Editor.WriteMessage($"\nFehler in AEC1003: {ex.Message}");
+                ed.WriteMessage($"\n[AEC1003] Fehler: {ex.Message}");
+                trans.Abort();
             }
         }
+
+
+
+
+        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+        // frmAEC1001_01                                                       #0003 AEC1004
+        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+
+
+
+        [CommandMethod("AEC1004")]
+        public void AEC1004()
+        {
+            Document? doc = Application.DocumentManager.MdiActiveDocument;
+            if (doc == null) return;
+
+            Database db = doc.Database;
+            Editor ed = doc.Editor;
+
+            // 1. Filter für die Auswahl definieren (Nur 3D-Solids zulassen) - KORREKTUR: \n statt Constants.vbLf
+            PromptEntityOptions options = new("\nWählen Sie einen Volumenkörper (3D-Solid):");
+            options.SetRejectMessage("Ausgewähltes Objekt ist kein Volumenkörper.");
+            options.AddAllowedClass(typeof(Solid3d), true);
+
+            // 2. Objekt vom Benutzer auswählen lassen
+            PromptEntityResult result = ed.GetEntity(options);
+            if (result.Status != PromptStatus.OK) return;
+
+            // Modernes 'using' ohne geschweifte Klammern für die Transaktion
+            using var tr = db.TransactionManager.StartTransaction();
+            try
+            {
+                // Volumenkörper öffnen - KORREKTUR: Eindeutiger OpenMode-Pfad
+                if (tr.GetObject(result.ObjectId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead) is not Solid3d solid) return;
+
+                // 4. Schwerpunkt (Centroid) auslesen
+                Point3d centroid = solid.MassProperties.Centroid;
+
+                // 5. Aktuellen Space öffnen - KORREKTUR: Eindeutiger OpenMode-Pfad
+                if (tr.GetObject(db.CurrentSpaceId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForWrite) is not BlockTableRecord blockTableRec) return;
+
+                // 6. Neues AutoCAD-Punkt-Objekt am Schwerpunkt erstellen
+                using DBPoint acPoint = new(centroid);
+
+                // Punkt der Zeichnung hinzufügen
+                blockTableRec.AppendEntity(acPoint);
+                tr.AddNewlyCreatedDBObject(acPoint, true);
+
+                // Transaktion speichern
+                tr.Commit();
+
+                // Erfolgsmeldung - KORREKTUR: Modernes String-Format ($) und \n statt vbLf
+                ed.WriteMessage($"\n[AEC1004] Schwerpunkt gefunden bei X:{centroid.X:F2}, Y:{centroid.Y:F2}, Z:{centroid.Z:F2}. Punkt wurde erstellt.");
+            }
+            catch (System.Exception ex)
+            {
+                ed.WriteMessage($"\n[AEC1004] Fehler: {ex.Message}");
+                tr.Abort();
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -286,41 +383,43 @@ namespace AEC1001
 
 
 
-        // 20260825-1100 #~~~2~~~~•~~~~3~~~~•~~~~4~~~~•~~~~5~~~~•~~~~6~~~~•~~~~7~~~~•~~~~H~~~~•~~~~9~~~~•~~~~0~~~~•~~~~1~~~~•~~~~Q
+        // Diese Routine richtet einen ausgewählten Text/MText im Raum über eine 3D-Ausrichtungsmatrix aus.
 
 
-
+        // 20260826-1600 #~~~2~~~~•~~~~3~~~~•~~~~4~~~~•~~~~5~~~~•~~~~6~~~~•~~~~7~~~~•~~~~H~~~~•~~~~9~~~~•~~~~0~~~~•~~~~1~~~~•~~~~Q
         [CommandMethod("AEC1012")]
         public void AEC1012()
         {
-            var doc = Application.DocumentManager.MdiActiveDocument;
+            Document? doc = Application.DocumentManager.MdiActiveDocument;
             if (doc == null) return;
 
-            var ed = doc.Editor;
+            Editor ed = doc.Editor;
 
             try
             {
-                // KORREKTUR: SystemToUse entfernt - Objekttyp wird direkt im String definiert
-                var entOpts = new PromptEntityOptions("\nWählen Sie den auszurichtenden Text (TEXT/MTEXT) aus: ");
+                PromptEntityOptions entOpts = new("\nWählen Sie den auszurichtenden Text (TEXT/MTEXT) aus: ");
                 entOpts.SetRejectMessage("Das gewählte Objekt muss ein TEXT oder MTEXT sein.");
                 entOpts.AddAllowedClass(typeof(DBText), false);
                 entOpts.AddAllowedClass(typeof(MText), false);
 
-                var entRes = ed.GetEntity(entOpts);
+                PromptEntityResult entRes = ed.GetEntity(entOpts);
                 if (entRes.Status != PromptStatus.OK) return;
 
-                var p1 = ed.GetPoint("\nErsten Zielpunkt angeben (Einfügepunkt): "); if (p1.Status != PromptStatus.OK) return;
+                PromptPointResult p1 = ed.GetPoint("\nErsten Zielpunkt angeben (Einfügepunkt): "); if (p1.Status != PromptStatus.OK) return;
 
-                var pOpt2 = new PromptPointOptions("\nZweiten Zielpunkt angeben (X-Achse): ") { UseBasePoint = true, BasePoint = p1.Value };
-                var p2 = ed.GetPoint(pOpt2); if (p2.Status != PromptStatus.OK) return;
+                PromptPointOptions pOpt2 = new("\nWählen Sie den zweiten Zielpunkt (X-Achse): ") { UseBasePoint = true, BasePoint = p1.Value };
+                PromptPointResult p2 = ed.GetPoint(pOpt2); if (p2.Status != PromptStatus.OK) return;
 
-                var pOpt3 = new PromptPointOptions("\nDritten Zielpunkt angeben (3D-Ebene): ") { UseBasePoint = true, BasePoint = p1.Value };
-                var p3 = ed.GetPoint(pOpt3); if (p3.Status != PromptStatus.OK) return;
+                PromptPointOptions pOpt3 = new("\nWählen Sie den dritten Zielpunkt (3D-Ebene): ") { UseBasePoint = true, BasePoint = p1.Value };
+                PromptPointResult p3 = ed.GetPoint(pOpt3); if (p3.Status != PromptStatus.OK) return;
 
                 using var tr = doc.Database.TransactionManager.StartTransaction();
-                if (tr.GetObject(entRes.ObjectId, AcOpenMode.ForWrite) is not Entity ent) return;
 
-                Point3d sOrg; Vector3d sNormal, sX;
+                // KORREKTUR: Eindeutiger OpenMode-Pfad für .NET 10
+                if (tr.GetObject(entRes.ObjectId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForWrite) is not Entity ent) return;
+
+                Point3d sOrg;
+                Vector3d sNormal, sX;
 
                 if (ent is DBText dbTxt)
                 {
@@ -333,48 +432,49 @@ namespace AEC1001
                 }
                 else return;
 
-                var srcCS = new CoordinateSystem3d(sOrg, sX, sNormal.CrossProduct(sX).GetNormal());
+                CoordinateSystem3d srcCS = new(sOrg, sX, sNormal.CrossProduct(sX).GetNormal());
 
-                var tX = p1.Value.GetVectorTo(p2.Value);
-                var v13 = p1.Value.GetVectorTo(p3.Value);
-                var tZRaw = tX.CrossProduct(v13);
+                Vector3d tX = p1.Value.GetVectorTo(p2.Value);
+                Vector3d v13 = p1.Value.GetVectorTo(p3.Value);
+                Vector3d tZRaw = tX.CrossProduct(v13);
 
                 if (tX.IsZeroLength() || v13.IsZeroLength() || tZRaw.IsZeroLength())
                 {
-                    ed.WriteMessage("\nFehler: Ungültige Geometrie (Punkte identisch oder auf einer Linie).");
+                    ed.WriteMessage("\n[AEC1012] Fehler: Ungültige Geometrie (Punkte identisch oder auf einer Linie).");
                     return;
                 }
 
-                var tXNorm = tX.GetNormal();
-                var tZNorm = tZRaw.GetNormal();
-                var tgtCS = new CoordinateSystem3d(p1.Value, tXNorm, tZNorm.CrossProduct(tXNorm).GetNormal());
+                Vector3d tXNorm = tX.GetNormal();
+                Vector3d tZNorm = tZRaw.GetNormal();
+                CoordinateSystem3d tgtCS = new(p1.Value, tXNorm, tZNorm.CrossProduct(tXNorm).GetNormal());
 
                 ent.TransformBy(Matrix3d.AlignCoordinateSystem(srcCS.Origin, srcCS.Xaxis, srcCS.Yaxis, srcCS.Zaxis, tgtCS.Origin, tgtCS.Xaxis, tgtCS.Yaxis, tgtCS.Zaxis));
+
                 tr.Commit();
-                ed.WriteMessage("\nText erfolgreich per 3D-Matrix ausgerichtet.");
+                ed.WriteMessage("\n[AEC1012] Text erfolgreich per 3D-Matrix ausgerichtet.");
             }
             catch (System.Exception ex)
             {
-                ed.WriteMessage($"\nFehler im Befehl AEC1012: {ex.Message}");
+                ed.WriteMessage($"\n[AEC1012] Fehler: {ex.Message}");
             }
         }
+    
+
+
+
+    // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+    // frmAEC1001_01                                                       #0014 AEC1014
+    // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
 
 
 
 
-        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
-        // frmAEC1001_01                                                       #0014 AEC1014
-        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+    // 3D-Align für Volumenkörper: Einmalig 3 Basispunkte wählen dann 3 Zielpunkte wählen, Körper wird kopiert und auf Ziel-
+    // punkten abgelegt. Anschließend wieder drei Zielpunkte wählen, Körper wird kopiert und auf Zielpunkten abgelegt ...
 
 
-
-
-        // 3D-Align für Volumenkörper: Einmalig 3 Basispunkte wählen dann 3 Zielpunkte wählen, Körper wird kopiert und auf Ziel-
-        // punkten abgelegt. Anschließend wieder drei Zielpunkte wählen, Körper wird kopiert und auf Zielpunkten abgelegt ...
-
-
-        // 20260826-1600 #~~~2~~~~•~~~~3~~~~•~~~~4~~~~•~~~~5~~~~•~~~~6~~~~•~~~~7~~~~•~~~~H~~~~•~~~~9~~~~•~~~~0~~~~•~~~~1~~~~•~~~~Q
-        private class SolidAlignJig : DrawJig
+    // 20260826-1600 #~~~2~~~~•~~~~3~~~~•~~~~4~~~~•~~~~5~~~~•~~~~6~~~~•~~~~7~~~~•~~~~H~~~~•~~~~9~~~~•~~~~0~~~~•~~~~1~~~~•~~~~Q
+    private class SolidAlignJig : DrawJig
         {
             private readonly Entity? _preview;
             private readonly Point3d _sOrg;
