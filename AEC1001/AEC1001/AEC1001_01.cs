@@ -367,12 +367,15 @@ namespace AEC1001
 
 
 
-
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
         // frmAEC1001_01                                                       #0005 AEC1005
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
 
-
+        
+        
+        
+        // Die Routine AEC1005 ermittelt vollautomatisch den mathematischen Schwerpunkt (Centroid) einer ausgewählten Region oder
+        // planaren Oberfläche (PlaneSurface) und platziert an dieser Position ein AutoCAD-Punkt-Objekt (DBPoint).
 
 
         [CommandMethod("AEC1005")]
@@ -472,28 +475,6 @@ namespace AEC1001
                 tr.Abort();
             }
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
