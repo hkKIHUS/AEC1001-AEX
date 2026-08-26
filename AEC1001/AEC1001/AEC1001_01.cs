@@ -38,14 +38,13 @@
 
 
 
-
+using System;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.Runtime;
 using Microsoft.VisualBasic;
-using System;
 using System.Diagnostics;
 using System.Windows.Forms;
 using AcOpenMode = Autodesk.AutoCAD.DatabaseServices.OpenMode;
@@ -571,7 +570,7 @@ namespace AEC1001
 
         private string EscapeAutoCADWildcards(string input)
         {
-            if (string.IsNullOrEmpty(input)) return input; git
+            ///   if (string.IsNullOrEmpty(input)) return input; git
             const string wildcards = "#@.*?[,`~";
             var sb = new System.Text.StringBuilder(input.Length * 2);
             foreach (char c in input)
@@ -586,24 +585,19 @@ namespace AEC1001
 
 
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
-        // frmAEC1001_01                                                       #0020 AEC1020
+        // frmAEC1001_01                                                       #0020 AEC1020_20260826_1359
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
 
 
 
 
-        // 20260825-1100 #~~~2~~~~•~~~~3~~~~•~~~~4~~~~•~~~~5~~~~•~~~~6~~~~•~~~~7~~~~•~~~~H~~~~•~~~~9~~~~•~~~~0~~~~•~~~~1~~~~•~~~~Q
-
-
-
-
-
+        // 20260825-1300 #~~~2~~~~•~~~~3~~~~•~~~~4~~~~•~~~~5~~~~•~~~~6~~~~•~~~~7~~~~•~~~~H~~~~•~~~~9~~~~•~~~~0~~~~•~~~~1~~~~•~~~~Q
 
 
         public class AEC1020Routine
         {
-            [CommandMethod("AEC1020")]
-            public void AEC1020()
+            [CommandMethod("AEC1020_20260826_1359")]
+            public void AEC1020_20260826_1359()
             {
                 Document doc = Application.DocumentManager.MdiActiveDocument;
                 Database db = doc.Database;
@@ -694,10 +688,135 @@ namespace AEC1001
                     }
                 }
             }
+
+            // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+            // frmAEC1001_01                                                       #0020 AEC1020
+            // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+
+
+
+
+            // 20260825-1300 #~~~2~~~~•~~~~3~~~~•~~~~4~~~~•~~~~5~~~~•~~~~6~~~~•~~~~7~~~~•~~~~H~~~~•~~~~9~~~~•~~~~0~~~~•~~~~1~~~~•~~~~Q
+
+
+
+            [CommandMethod("AEC1020")]
+            public void AEC1020()
+            {
+                Document? doc = Application.DocumentManager.MdiActiveDocument;
+                if (doc == null) return;
+
+                Database db = doc.Database;
+                Editor ed = doc.Editor;
+
+                // 1. Blockreferenz auswählen lassen
+                PromptEntityOptions peo = new("\nWählen Sie eine Blockreferenz aus: ");
+                peo.SetRejectMessage("\nDas gewählte Objekt ist kein Block.");
+                peo.AddAllowedClass(typeof(BlockReference), true);
+
+                PromptEntityResult per = ed.GetEntity(peo);
+                if (per.Status != PromptStatus.OK) return;
+
+                // Modernes 'using' ohne geschweifte Klammern für die Transaktion
+                using var trans = db.TransactionManager.StartTransaction();
+                try
+                {
+                    // Eindeutiger OpenMode-Verweis
+                    BlockReference? blockRef = trans.GetObject(per.ObjectId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead) as BlockReference;
+                    if (blockRef == null) return;
+
+                    // Eindeutiger OpenMode-Verweis
+                    BlockTableRecord? blockDef = trans.GetObject(blockRef.BlockTableRecord, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead) as BlockTableRecord;
+                    if (blockDef == null) return;
+
+                    // Eindeutiger OpenMode-Verweis
+                    BlockTable? bt = trans.GetObject(db.BlockTableId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead) as BlockTable;
+                    if (bt == null) return;
+
+                    // Eindeutiger OpenMode-Verweis
+                    BlockTableRecord? modelSpace = trans.GetObject(bt[BlockTableRecord.ModelSpace], Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead) as BlockTableRecord;
+                    if (modelSpace == null) return;
+
+                    // Layer-Sperrenprüfung mit eindeutigem OpenMode-Verweis
+                    if (trans.GetObject(blockRef.LayerId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead) is LayerTableRecord blockLayer && blockLayer.IsLocked)
+                    {
+                        ed.WriteMessage($"\n[AEC1020] Fehler: Layer '{blockLayer.Name}' ist gesperrt. Abbruch.");
+                        return;
+                    }
+
+                    bool? bestimmterNeuerZustand = null;
+                    int trefferZaehler = 0;
+
+                    // 2. Schleife durch Objekte im Block
+                    foreach (ObjectId entId in blockDef)
+                    {
+                        // Eindeutiger OpenMode-Verweis
+                        DBObject obj = trans.GetObject(entId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
+                        if (obj is not DBPoint bPoint) continue;
+
+                        Point3d wcsPointPosition = bPoint.Position.TransformBy(blockRef.BlockTransform);
+
+                        // 3. Im Modellbereich nach Texten suchen
+                        foreach (ObjectId msId in modelSpace)
+                        {
+                            if (msId.IsErased) continue;
+
+                            // Eindeutiger OpenMode-Verweis
+                            DBObject msObj = trans.GetObject(msId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
+
+                            // Optimierter Aufruf der Hilfsmethode (Klammerreduktion)
+                            UpdateTextVisibility(msObj, wcsPointPosition, ref bestimmterNeuerZustand, ref trefferZaehler);
+                        }
+                    }
+
+                    trans.Commit();
+                    ed.Regen();
+
+                    string statusInfo = bestimmterNeuerZustand == true ? "sichtbar" : "unsichtbar";
+                    ed.WriteMessage(trefferZaehler > 0
+                        ? $"\n[AEC1020] Erfolg! {trefferZaehler} Texte wurden {statusInfo} geschaltet.\n"
+                        : "\n[AEC1020] Keine passenden Texte an den Koordinaten gefunden.\n");
+                }
+                catch (System.Exception ex)
+                {
+                    ed.WriteMessage("\n[AEC1020] Kritischer Fehler: " + ex.Message);
+                    trans.Abort();
+                }
+            }
+
+            // Hilfsmethode zur Auslagerung der Text-Prüfung und Reduzierung der Schachtelungstiefe
+            private void UpdateTextVisibility(DBObject obj, Point3d targetPos, ref bool? newStatus, ref int counter)
+            {
+                if (obj is DBText txt && targetPos.DistanceTo(txt.Position) < 0.1)
+                {
+                    newStatus ??= !txt.Visible;
+                    if (txt.Visible == newStatus) return;
+
+                    txt.UpgradeOpen();
+                    txt.Visible = (bool)newStatus;
+                    counter++;
+                }
+                else if (obj is MText mtxt && targetPos.DistanceTo(mtxt.Location) < 0.1)
+                {
+                    newStatus ??= !mtxt.Visible;
+                    if (mtxt.Visible == newStatus) return;
+
+                    mtxt.UpgradeOpen();
+                    mtxt.Visible = (bool)newStatus;
+                    counter++;
+                }
+            }
         }
     }
 }
-    
+
+
+
+
+
+
+
+
 
 
 
