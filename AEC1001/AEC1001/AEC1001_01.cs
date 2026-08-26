@@ -303,9 +303,14 @@ namespace AEC1001
 
 
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
-        // frmAEC1001_01                                                       #0003 AEC1004
+        // frmAEC1001_01                                                       #0004 AEC1004
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
 
+
+
+
+        // Diese Routine ermittelt vollautomatisch den mathematischen Schwerpunkt (Centroid) eines angeklickten 3D-Volumenkörpers
+        // und platziert an genau dieser Koordinate ein AutoCAD-Punkt-Objekt (DBPoint).
 
 
         [CommandMethod("AEC1004")]
@@ -358,6 +363,123 @@ namespace AEC1001
                 tr.Abort();
             }
         }
+
+
+
+
+
+        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+        // frmAEC1001_01                                                       #0005 AEC1005
+        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+
+
+
+
+        [CommandMethod("AEC1005")]
+        public void AEC1005()
+        {
+            Document? doc = Application.DocumentManager.MdiActiveDocument;
+            if (doc == null) return;
+
+            Database db = doc.Database;
+            Editor ed = doc.Editor;
+
+            // 1. Filter für die Auswahl definieren
+            PromptEntityOptions options = new("\nWählen Sie eine Region oder eine planare Fläche aus:");
+            options.SetRejectMessage("Das ausgewählte Objekt ist keine Region und keine planare Fläche.");
+            options.AddAllowedClass(typeof(Autodesk.AutoCAD.DatabaseServices.Region), true);
+            options.AddAllowedClass(typeof(Autodesk.AutoCAD.DatabaseServices.PlaneSurface), true);
+
+            // 2. Objekt vom Benutzer auswählen lassen
+            PromptEntityResult result = ed.GetEntity(options);
+            if (result.Status != PromptStatus.OK) return;
+
+            // Modernes 'using' ohne geschweifte Klammern für die Transaktion
+            using var tr = db.TransactionManager.StartTransaction();
+            try
+            {
+                // Objekt aus der Datenbank öffnen
+                if (tr.GetObject(result.ObjectId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead) is not Entity entity) return;
+
+                Point3d centroid = new Point3d();
+                bool schwerpunktGefunden = false;
+
+                // 3. Fall A: Das Objekt ist eine Region
+                if (entity is Autodesk.AutoCAD.DatabaseServices.Region region)
+                {
+                    using Plane regionPlane = region.GetPlane();
+                    CoordinateSystem3d cs = regionPlane.GetCoordinateSystem();
+                    Point3d origin = cs.Origin;
+                    Vector3d xAxis = cs.Xaxis;
+                    Vector3d yAxis = cs.Yaxis;
+
+                    RegionAreaProperties areaProps = region.AreaProperties(ref origin, ref xAxis, ref yAxis);
+                    centroid = regionPlane.EvaluatePoint(areaProps.Centroid);
+                    schwerpunktGefunden = true;
+                }
+                // 4. Fall B: Das Objekt ist eine PlaneSurface (Assoziative Fläche)
+                else if (entity is Autodesk.AutoCAD.DatabaseServices.PlaneSurface planeSurface)
+                {
+                    // Trick: Wir holen uns die Grenzkurven der planaren Fläche
+                    using DBObjectCollection curves = new();
+                    planeSurface.Explode(curves);
+
+                    if (curves.Count > 0)
+                    {
+                        // Aus den Kurven eine temporäre Region erzeugen, um die MassProperties zu nutzen
+                        using DBObjectCollection regions = Autodesk.AutoCAD.DatabaseServices.Region.CreateFromCurves(curves);
+                        if (regions.Count > 0 && regions[0] is Autodesk.AutoCAD.DatabaseServices.Region tempRegion)
+                        {
+                            using Plane tempPlane = tempRegion.GetPlane();
+                            CoordinateSystem3d cs = tempPlane.GetCoordinateSystem();
+                            Point3d origin = cs.Origin;
+                            Vector3d xAxis = cs.Xaxis;
+                            Vector3d yAxis = cs.Yaxis;
+
+                            RegionAreaProperties areaProps = tempRegion.AreaProperties(ref origin, ref xAxis, ref yAxis);
+                            centroid = tempPlane.EvaluatePoint(areaProps.Centroid);
+                            schwerpunktGefunden = true;
+                        }
+                    }
+                }
+
+                // Sicherheitsabbruch, falls der Schwerpunkt nicht berechnet werden konnte
+                if (!schwerpunktGefunden)
+                {
+                    ed.WriteMessage("\n[AEC1005] Fehler: Schwerpunkt konnte nicht berechnet werden.");
+                    return;
+                }
+
+                // 5. Aktuellen Space öffnen (Model Space oder Layout)
+                if (tr.GetObject(db.CurrentSpaceId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForWrite) is not BlockTableRecord blockTableRec) return;
+
+                // 6. Neues AutoCAD-Punkt-Objekt am Schwerpunkt erstellen
+                DBPoint acPoint = new DBPoint(centroid);
+
+                // Punkt der Zeichnung hinzufügen
+                blockTableRec.AppendEntity(acPoint);
+                tr.AddNewlyCreatedDBObject(acPoint, true);
+
+                // Transaktion speichern
+                tr.Commit();
+
+                // Erfolgsmeldung und Koordinatenausgabe in der Befehlszeile
+                ed.WriteMessage($"\n[AEC1005] Schwerpunkt gefunden bei X:{centroid.X:F2}, Y:{centroid.Y:F2}, Z:{centroid.Z:F2}. Punkt wurde erstellt.");
+            }
+            catch (System.Exception ex)
+            {
+                ed.WriteMessage($"\n[AEC1005] Fehler: {ex.Message}");
+                tr.Abort();
+            }
+        }
+
+
+
+
+
+
+
+
 
 
 
