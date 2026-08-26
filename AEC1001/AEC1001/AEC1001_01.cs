@@ -55,6 +55,7 @@ using WinIO = System.IO;
 
 
 
+
 namespace AEC1001
 
 {
@@ -278,7 +279,7 @@ namespace AEC1001
 
 
 
-                // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
         // frmAEC1001_01                                                       #0012 AEC1012
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
 
@@ -486,7 +487,7 @@ namespace AEC1001
 
 
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
-        // frmAEC1001_01                                                       #0020 AEC1020
+        // frmAEC1001_01                                                       #0020 AEC1020_20260826_1307
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
 
 
@@ -495,8 +496,8 @@ namespace AEC1001
         // 20260825-1100 #~~~2~~~~•~~~~3~~~~•~~~~4~~~~•~~~~5~~~~•~~~~6~~~~•~~~~7~~~~•~~~~H~~~~•~~~~9~~~~•~~~~0~~~~•~~~~1~~~~•~~~~Q
 
 
-        [CommandMethod("AEC1020")]
-        public void AEC1020()
+        [CommandMethod("AEC1020_20260826_1307")]
+        public void AEC1020_20260826_1307()
         {
             var doc = Application.DocumentManager.MdiActiveDocument;
             if (doc == null) return;
@@ -570,7 +571,7 @@ namespace AEC1001
 
         private string EscapeAutoCADWildcards(string input)
         {
-            if (string.IsNullOrEmpty(input)) return input;git
+            if (string.IsNullOrEmpty(input)) return input; git
             const string wildcards = "#@.*?[,`~";
             var sb = new System.Text.StringBuilder(input.Length * 2);
             foreach (char c in input)
@@ -578,10 +579,158 @@ namespace AEC1001
                 if (wildcards.Contains(c)) sb.Append('`');
                 sb.Append(c);
             }
-            return sb.ToString(); 'zzz'
+            return sb.ToString();
+        }
+
+
+
+
+        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+        // frmAEC1001_01                                                       #0020 AEC1020
+        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+
+
+
+
+        // 20260825-1100 #~~~2~~~~•~~~~3~~~~•~~~~4~~~~•~~~~5~~~~•~~~~6~~~~•~~~~7~~~~•~~~~H~~~~•~~~~9~~~~•~~~~0~~~~•~~~~1~~~~•~~~~Q
+
+
+
+
+
+
+
+        public class AEC1020Routine
+        {
+            [CommandMethod("AEC1020")]
+            public void AEC1020()
+            {
+                Document doc = Application.DocumentManager.MdiActiveDocument;
+                Database db = doc.Database;
+                Editor ed = doc.Editor;
+
+                // 1. Benutzer fragen: Ein oder Aus
+                PromptKeywordOptions pko = new PromptKeywordOptions("\n[AEC1020] Text-Sichtbarkeit wählen [Ein/Aus]: ");
+                pko.Keywords.Add("Ein");
+                pko.Keywords.Add("Aus");
+
+                PromptResult prResult = ed.GetKeywords(pko);
+                if (prResult.Status != PromptStatus.OK) return;
+
+                bool setVisible = (prResult.StringResult == "Ein");
+
+                // 2. Blockreferenz auswählen lassen
+                PromptEntityOptions peo = new PromptEntityOptions("\nWählen Sie eine Blockreferenz aus: ");
+                peo.SetRejectMessage("\nDas gewählte Objekt ist kein Block.");
+                peo.AddAllowedClass(typeof(BlockReference), true);
+
+                PromptEntityResult per = ed.GetEntity(peo);
+                if (per.Status != PromptStatus.OK) return;
+
+                using (Transaction trans = db.TransactionManager.StartTransaction())
+                {
+                    try
+                    {
+                        // Blockreferenz öffnen
+                        BlockReference? blockRef = trans.GetObject(per.ObjectId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead) as BlockReference;
+                        if (blockRef == null) return;
+
+                        // Blockdefinition öffnen
+                        BlockTableRecord? blockDef = trans.GetObject(blockRef.BlockTableRecord, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead) as BlockTableRecord;
+                        if (blockDef == null) return;
+
+                        // Modellbereich öffnen
+                        BlockTable? bt = trans.GetObject(db.BlockTableId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead) as BlockTable;
+                        BlockTableRecord? modelSpace = trans.GetObject(bt[BlockTableRecord.ModelSpace], Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead) as BlockTableRecord;
+
+                        int trefferZaehler = 0;
+
+                        // 3. Schleife durch alle Objekte im Block (Hier wird entId genutzt)
+                        foreach (ObjectId entId in blockDef)
+                        {
+                            DBObject obj = trans.GetObject(entId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
+
+                            if (obj is DBPoint bPoint)
+                            {
+                                // Position in Weltkoordinaten umrechnen
+                                Point3d pointInBlock = bPoint.Position;
+                                Point3d wcsPointPosition = pointInBlock.TransformBy(blockRef.BlockTransform);
+
+                                // 4. Im Modellbereich nach dem zugehörigen Text suchen
+                                foreach (Autodesk.AutoCAD.DatabaseServices.ObjectId msId in modelSpace!)
+                                {
+                                    DBObject msObj = trans.GetObject(msId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead);
+
+                                    if (msObj is DBText dbText)
+                                    {
+                                        // Abstandsprüfung mit 0.1 Einheiten Toleranz
+                                        if (wcsPointPosition.DistanceTo(dbText.Position) < 0.1)
+                                        {
+                                            dbText.UpgradeOpen();
+                                            dbText.Visible = setVisible;
+                                            trefferZaehler++;
+                                        }
+                                    }
+                                    else if (msObj is MText mText)
+                                    {
+                                        if (wcsPointPosition.DistanceTo(mText.Location) < 0.1)
+                                        {
+                                            mText.UpgradeOpen();
+                                            mText.Visible = setVisible;
+                                            trefferZaehler++;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        trans.Commit();
+                        ed.WriteMessage($"\n[AEC1020] Fertig! Sichtbarkeit von {trefferZaehler} Texten wurde auf '{setVisible}' gesetzt.\n");
+                    }
+                    catch (System.Exception ex)
+                    {
+                        ed.WriteMessage("\n[Fehler] Problem in Routine AEC1020: " + ex.Message);
+                        trans.Abort();
+                    }
+                }
+            }
         }
     }
 }
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
