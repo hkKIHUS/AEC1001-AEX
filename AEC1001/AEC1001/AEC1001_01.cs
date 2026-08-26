@@ -578,7 +578,7 @@ namespace AEC1001
                 if (wildcards.Contains(c)) sb.Append('`');
                 sb.Append(c);
             }
-            return sb.ToString();
+            return sb.ToString(); 'zzz'
         }
     }
 }
