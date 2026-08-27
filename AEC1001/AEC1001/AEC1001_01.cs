@@ -27,6 +27,7 @@
 
 
 using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Geometry;
@@ -38,10 +39,9 @@ using System.Runtime.ConstrainedExecution;
 using System.Windows.Forms;
 using AcOpenMode = Autodesk.AutoCAD.DatabaseServices.OpenMode;
 using Application = Autodesk.AutoCAD.ApplicationServices.Application; // Mehrdeutigkeit auflösen
-using WinIO = System.IO;
-
 // Löst die Mehrdeutigkeit mit System.IO oder VB-Konstanten auf:
 using OpenMode = Autodesk.AutoCAD.DatabaseServices.OpenMode;
+using WinIO = System.IO;
 
 
 
@@ -818,7 +818,6 @@ namespace AEC1001
 
 
 
-
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
         // frmAEC1001_01                                                       #1021 AEC1021 Teil 1
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
@@ -826,12 +825,13 @@ namespace AEC1001
 
 
 
+        // AEC1021 sortiert Punkte entlang zweier Polylinien in einem AutoCAD-Block von links nach rechts (relativ zur aktuellen
+        // BKS-X-Achse). Der Befehl nummeriert die Punkte automatisch durch (Basislinie: ungerade 1, 3, 5... / entfernte Linie:
+        // gerade 2, 4, 6...) und schreibt die Knotennummern als blaue, zentrierte Texte direkt an die Kurventangente ausgerichtet
+        // in die Zeichnung.
+
+
         // 20260827-1600 #~~~2~~~~•~~~~3~~~~•~~~~4~~~~•~~~~5~~~~•~~~~6~~~~•~~~~7~~~~•~~~~H~~~~•~~~~9~~~~•~~~~0~~~~•~~~~1~~~~•~~~~Q
-
-
-
-
-
         [CommandMethod("AEC1021")]
         public void AEC1021()
         {
@@ -846,7 +846,7 @@ namespace AEC1001
                 // =================================================================
 
                 using (var infoForm = new System.Windows.Forms.Form())
-                  
+
                 {
                     infoForm.Text = "AEC1021 " + new string(' ', 18) + " 6 s" + new string(' ', 18) + " Information";
                     infoForm.Size = new System.Drawing.Size(480, 160);
@@ -859,7 +859,7 @@ namespace AEC1001
                     var lblText = new System.Windows.Forms.Label
                     {
                         // Fügt eine Leerzeile ganz am Anfang ein und setzt den Text auf 6 Sekunden
-                        Text = Environment.NewLine + 
+                        Text = Environment.NewLine +
                                $"Ursprung Aktuelles BKS   X - R i c h t u n g   !{Environment.NewLine}" +
                                $"Knotennummerierung   1   3   5   7   9   …",
                         Dock = System.Windows.Forms.DockStyle.Fill,
@@ -1011,19 +1011,14 @@ namespace AEC1001
                 ed.WriteMessage($"\nFehler im Befehl AEC1021: {ex.Message}");
             }
         }
-    
-    
+
+        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+        // frmAEC1001_01                                                       #1021 AEC1021 Teil 2
+        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
 
 
 
-    // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
-    // frmAEC1001_01                                                       #1021 AEC1021 Teil 2
-    // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
-
-
- 
-       
-            private double BerechneKurvenWinkel(Curve kurve, Point3d weltPunkt, Matrix3d bksMatrix)
+        private double BerechneKurvenWinkel(Curve kurve, Point3d weltPunkt, Matrix3d bksMatrix)
         {
             try
             {
@@ -1057,56 +1052,385 @@ namespace AEC1001
             btr.AppendEntity(text);
             tr.AddNewlyCreatedDBObject(text, true);
         }
-    }
-}
 
 
         public class AutoCADWindowWrapper : System.Windows.Forms.IWin32Window
+
         {
             public IntPtr Handle { get; }
             public AutoCADWindowWrapper(IntPtr handle) => Handle = handle;
         }
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
 
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
-        // frmAEC1001_01                                                       #1022 AEC1022
+        // frmAEC1001_01                                                       #1022 AEC1022 
+        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+
+
+        
+        
+        // AEC1022 liest Punkte und durchnummerierte Knotentexte aus einem ausgewählten AutoCAD-Block sowie dem Modellbereich aus.
+        // Der Befehl verknüpft diese geometrisch zu Paaren (Knoten 1-2, 3-4 etc.) und verlegt vollautomatisch Klone eines
+        // gewählten 3D-Volumenkörpers (Solid3D), indem er das Quell-Koordinatensystem exakt an den Achsen und Ausrichtungen der
+        // Zielpaare ausrichtet.
+
+
+
+        // 20260827-1900 #~~~2~~~~•~~~~3~~~~•~~~~4~~~~•~~~~5~~~~•~~~~6~~~~•~~~~7~~~~•~~~~H~~~~•~~~~9~~~~•~~~~0~~~~•~~~~1~~~~•~~~~Q
+
+
+        [CommandMethod("AEC1022")]
+            public void AEC1022()
+            {
+                Document doc = Application.DocumentManager.MdiActiveDocument;
+                Database db = doc.Database;
+                Editor ed = doc.Editor;
+
+                try
+                {
+                    // =================================================================
+                    // 1. OBJEKT-ABFRAGEN VOM BILDSCHIRM
+                    // =================================================================
+
+                    // Block auswählen
+                    var peoBlock = new PromptEntityOptions("\nWählen Sie den Quell-Block mit den Polylinien/Punkten aus: ");
+                    peoBlock.SetRejectMessage("Ausgewähltes Objekt ist kein Block.");
+                    peoBlock.AddAllowedClass(typeof(BlockReference), true);
+                    PromptEntityResult perBlock = ed.GetEntity(peoBlock);
+                    if (perBlock.Status != PromptStatus.OK) return;
+
+                    // 3D-Solid auswählen
+                    var peoSolid = new PromptEntityOptions("\nWählen Sie den auszurichtenden 3D-Volumenkörper (Solid3D) aus: ");
+                    peoSolid.SetRejectMessage("Kein 3D-Volumenkörper.");
+                    peoSolid.AddAllowedClass(typeof(Solid3d), true);
+                    PromptEntityResult perSolid = ed.GetEntity(peoSolid);
+                    if (perSolid.Status != PromptStatus.OK) return;
+
+                    // 3 Basispunkte am Quell-Solid abfragen
+                    Matrix3d ucsM = ed.CurrentUserCoordinateSystem;
+                    Vector3d ucsDownVectWcs = ucsM.CoordinateSystem3d.Zaxis.Negate().GetNormal();
+
+                    var ppo1 = new PromptPointOptions("\nWählen Sie den 1. Basispunkt am 3D-Solid (B1 -> Z1): ");
+                    PromptPointResult ppr1 = ed.GetPoint(ppo1);
+                    if (ppr1.Status != PromptStatus.OK) return;
+                    Point3d q1 = ppr1.Value.TransformBy(ucsM);
+
+                    var ppo2 = new PromptPointOptions("\nWählen Sie den 2. Basispunkt am 3D-Solid (B2 -> Z2): ") { BasePoint = ppr1.Value, UseBasePoint = true };
+                    PromptPointResult ppr2 = ed.GetPoint(ppo2);
+                    if (ppr2.Status != PromptStatus.OK) return;
+                    Point3d q2 = ppr2.Value.TransformBy(ucsM);
+
+                    var ppo3 = new PromptPointOptions("\nWählen Sie den 3. Basispunkt am 3D-Solid (B3): ") { BasePoint = ppr1.Value, UseBasePoint = true };
+                    PromptPointResult ppr3 = ed.GetPoint(ppo3);
+                    if (ppr3.Status != PromptStatus.OK) return;
+                    Point3d q3 = ppr3.Value.TransformBy(ucsM);
+
+                    // Quell-Koordinatensystem berechnen
+                    Vector3d qX = q1.GetVectorTo(q2).GetNormal();
+                    Vector3d qPlane = q1.GetVectorTo(q3).GetNormal();
+                    Vector3d qZ = qX.CrossProduct(qPlane).GetNormal();
+                    Vector3d qY = qZ.CrossProduct(qX).GetNormal();
+
+                    if (qX.IsZeroLength() || qZ.IsZeroLength())
+                    {
+                        ed.WriteMessage("\nFehler: Die gewählten Basispunkte sind kollinear oder identisch.");
+                        return;
+                    }
+
+                    Matrix3d sourceMatrix = Matrix3d.AlignCoordinateSystem(q1, qX, qY, qZ, Point3d.Origin, Vector3d.XAxis, Vector3d.YAxis, Vector3d.ZAxis);
+
+                    // =================================================================
+                    // 2. GEOMETRISCHE ANALYSE & VERARBEITUNG (TRANSAKTION)
+                    // =================================================================
+
+                    using (Transaction tr = db.TransactionManager.StartTransaction())
+                    {
+                        var blkRef = (BlockReference)tr.GetObject(perBlock.ObjectId, OpenMode.ForRead);
+                        var btr = (BlockTableRecord)tr.GetObject(blkRef.IsDynamicBlock ? blkRef.DynamicBlockTableRecord : blkRef.BlockTableRecord, OpenMode.ForRead);
+
+                        ObjectId blockLayerId = blkRef.LayerId;
+                        Matrix3d xform = blkRef.BlockTransform;
+                        double maxAllowedDistance = blkRef.GeometricExtents.MinPoint.DistanceTo(blkRef.GeometricExtents.MaxPoint) * 1.5;
+
+                        // Punkte aus dem Block sammeln
+                        var worldPoints = btr.Cast<ObjectId>()
+                            .Select(id => tr.GetObject(id, OpenMode.ForRead))
+                            .OfType<DBPoint>()
+                            .Select(pt => pt.Position.TransformBy(xform))
+                            .ToList();
+
+                        if (worldPoints.Count == 0)
+                        {
+                            ed.WriteMessage("\nFehler: Keine Punkte im Quell-Block gefunden.");
+                            return;
+                        }
+
+                        // Passende Texte im Modellbereich filtern und sortieren
+                        var currentSpace = (BlockTableRecord)tr.GetObject(db.CurrentSpaceId, OpenMode.ForWrite);
+
+                        var targetSpaceTexts = currentSpace.Cast<ObjectId>()
+                            .Select(id => tr.GetObject(id, OpenMode.ForRead))
+                            .OfType<DBText>()
+                            .Where(txt => txt.LayerId == blockLayerId && int.TryParse(txt.TextString.Trim(), out _))
+                            .Select(txt => (
+                                Number: int.Parse(txt.TextString.Trim()),
+                                Position: txt.IsDefaultAlignment ? txt.Position : txt.AlignmentPoint
+                            ))
+                            .OrderBy(t => t.Number)
+                            .ToList();
+
+                        // Liste für die gepaarten Zielpunkte aufbauen
+                        var pairsPoints = new List<Point3d>();
+
+                        foreach (var textInfo in targetSpaceTexts)
+                        {
+                            // Nächstgelegenen Punkt zum Text ermitteln
+                            var naechsterPunkt = worldPoints
+                                .Select(wp => new { Punkt = wp, Distanz = textInfo.Position.DistanceTo(wp) })
+                                .Where(x => x.Distanz <= maxAllowedDistance)
+                                .OrderBy(x => x.Distanz)
+                                .Select(x => (Point3d?)x.Punkt)
+                                .FirstOrDefault();
+
+                            if (naechsterPunkt.HasValue)
+                            {
+                                pairsPoints.Add(naechsterPunkt.Value);
+                            }
+                        }
+
+                        // Validierung der gefundenen Paare
+                        if (pairsPoints.Count < 2 || pairsPoints.Count % 2 != 0)
+                        {
+                            ed.WriteMessage($"\nFehler: Keine gültige gerade Anzahl an Zielpunkt-Paaren gefunden! (Gefunden: {pairsPoints.Count})");
+                            return;
+                        }
+
+                        // =================================================================
+                        // 3. 3D-SOLID VERLEGUNG
+                        // =================================================================
+                        var originalSolid = (Solid3d)tr.GetObject(perSolid.ObjectId, OpenMode.ForRead);
+                        int verlegteZaehler = 0;
+
+                        for (int i = 0; i < pairsPoints.Count; i += 2)
+                        {
+                            Point3d z1 = pairsPoints[i];
+                            Point3d z2 = pairsPoints[i + 1];
+
+                            Vector3d tX = z1.GetVectorTo(z2).GetNormal();
+                            Vector3d tZ = tX.CrossProduct(ucsDownVectWcs).GetNormal();
+                            Vector3d tY = tZ.CrossProduct(tX).GetNormal();
+
+                            if (tX.IsZeroLength() || tZ.IsZeroLength()) continue;
+
+                            Matrix3d targetMatrix = Matrix3d.AlignCoordinateSystem(Point3d.Origin, Vector3d.XAxis, Vector3d.YAxis, Vector3d.ZAxis, z1, tX, tY, tZ);
+                            Matrix3d finalXform = targetMatrix * sourceMatrix;
+
+                            var clonedSolid = (Solid3d)originalSolid.Clone();
+                            clonedSolid.TransformBy(finalXform);
+                            clonedSolid.LayerId = blockLayerId; // Übernimmt den Layer des Quell-Blocks
+
+                            currentSpace.AppendEntity(clonedSolid);
+                            tr.AddNewlyCreatedDBObject(clonedSolid, true);
+                            verlegteZaehler++;
+                        }
+
+                        tr.Commit();
+                        ed.WriteMessage($"\nAEC1022: Erfolg! {verlegteZaehler} 3D-Volumenkörper wurden vollautomatisch verlegt.");
+                    }
+
+                    ed.Regen();
+                }
+                catch (System.Exception ex)
+                {
+                    ed.WriteMessage($"\nFehler im Befehl AEC1022: {ex.Message}");
+                }
+            }
+
+
+
+
+        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+        // frmAEC1001_01                                                       #1023 AEC1023 
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
 
 
 
 
-// 20260827-1600 #~~~2~~~~•~~~~3~~~~•~~~~4~~~~•~~~~5~~~~•~~~~6~~~~•~~~~7~~~~•~~~~H~~~~•~~~~9~~~~•~~~~0~~~~•~~~~1~~~~•~~~~Q
+        // AEC1023 projiziert eine Auswahl von Punkten aus dem Modellbereich rein in vertikaler Z-Richtung auf eine ausgewählte
+        // Linie oder Polylinie, die sich innerhalb eines Blocks befindet. Der Befehl berechnet die exakte Z-Höhe der Kurve an den
+        // jeweiligen X/Y-Koordinaten der Punkte und generiert die projizierten Zielpunkte auf einem automatisch erstellten Layer
+        // namens "0100TMP0001".
+
+
+        // 20260827-1900 #~~~2~~~~•~~~~3~~~~•~~~~4~~~~•~~~~5~~~~•~~~~6~~~~•~~~~7~~~~•~~~~H~~~~•~~~~9~~~~•~~~~0~~~~•~~~~1~~~~•~~~~Q
+        [CommandMethod("AEC1023")]
+            public void AEC1023()
+            {
+                Document doc = Application.DocumentManager.MdiActiveDocument;
+                Database db = doc.Database;
+                Editor ed = doc.Editor;
+                string targetLayer = "0100TMP0001";
+
+                // 1. Verschachteltes Objekt im geschlossenen Block auswählen
+                var pneo = new PromptNestedEntityOptions("\nWählen Sie die Linie/Polylinie innerhalb des Blocks aus: ");
+                PromptNestedEntityResult pnrd = ed.GetNestedEntity(pneo);
+                if (pnrd.Status != PromptStatus.OK) return;
+
+                // 2. Zu projizierende Punkte im Modellbereich auswählen
+                var typedArgs = new[] { new TypedValue(Convert.ToInt32(DxfCode.Start), "POINT") };
+                var filter = new SelectionFilter(typedArgs);
+                PromptSelectionResult psr = ed.GetSelection(filter);
+                if (psr.Status != PromptStatus.OK || psr.Value == null) return;
+
+                // Transformationsmatrizen für den Wechsel zwischen Welt- und Blockkoordinaten
+                Matrix3d blockTransform = pnrd.Transform;
+                Matrix3d invBlockTransform = blockTransform.Inverse();
+
+                using (Transaction tr = db.TransactionManager.StartTransaction())
+                {
+                    ObjectId selectedId = pnrd.ObjectId;
+                    DBObject dbObj = tr.GetObject(selectedId, OpenMode.ForRead);
+
+                    // Falls der Klick einen Stützpunkt getroffen hat, die übergeordnete Polylinie holen
+                    if (dbObj is Vertex2d || dbObj is PolylineVertex3d)
+                    {
+                        selectedId = dbObj.OwnerId;
+                        dbObj = tr.GetObject(selectedId, OpenMode.ForRead);
+                    }
+
+                    RXClass rxType = selectedId.ObjectClass;
+
+                    // FEHLERSCHUTZ: Falls der Klick die BlockReference erwischt hat
+                    if (rxType.IsDerivedFrom(RXClass.GetClass(typeof(BlockReference))))
+                    {
+                        ObjectId[] containers = pnrd.GetContainers();
+                        if (containers != null && containers.Length > 0)
+                        {
+                            selectedId = pnrd.ObjectId;
+                            rxType = selectedId.ObjectClass;
+                        }
+                    }
+
+                    // Validierung auf Curve-Klasse
+                    if (!rxType.IsDerivedFrom(RXClass.GetClass(typeof(Curve))))
+                    {
+                        ed.WriteMessage($"\nFehler: Das gewählte Objekt ist vom Typ '{rxType.DxfName}'. Bitte direkt eine Linie anklicken!");
+                        return;
+                    }
+
+                    // Layer prüfen/erstellen
+                    var lt = (LayerTable)tr.GetObject(db.LayerTableId, OpenMode.ForRead);
+                    if (!lt.Has(targetLayer))
+                    {
+                        lt.UpgradeOpen();
+                        var ltr = new LayerTableRecord
+                        {
+                            Name = targetLayer,
+                            Color = Autodesk.AutoCAD.Colors.Color.FromColorIndex(ColorMethod.ByAci, 1)
+                        };
+                        lt.Add(ltr);
+                        tr.AddNewlyCreatedDBObject(ltr, true);
+                    }
+
+                    var modelSpace = (BlockTableRecord)tr.GetObject(SymbolUtilityServices.GetBlockModelSpaceId(db), OpenMode.ForWrite);
+                    var curveInsideBlock = (Curve)tr.GetObject(selectedId, OpenMode.ForRead);
+                    int counter = 0;
+
+                    // Schleife durch alle ausgewählten Punkte
+                    foreach (ObjectId id in psr.Value.GetObjectIds())
+                    {
+                        var modelPoint = (DBPoint)tr.GetObject(id, OpenMode.ForRead);
+                        Point3d worldPt = modelPoint.Position;
+
+                        // A. Welt-Punkt in das lokale Koordinatensystem des Blocks transformieren
+                        Point3d localPt = worldPt.TransformBy(invBlockTransform);
+
+                        // B. Lokalen Punkt flach auf die XY-Ebene (Z=0) des Blocks legen
+                        Point3d flattenedLocalPt = new Point3d(localPt.X, localPt.Y, 0.0);
+
+                        // C. Nächstgelegenen 2D-Punkt ermitteln (Lot entlang der Z-Achse)
+                        Point3d localProjectedPt = curveInsideBlock.GetClosestPointTo(flattenedLocalPt, Vector3d.ZAxis, true);
+
+                        // D. X/Y des Originalpunkts beibehalten, Z-Höhe von der Kurve übernehmen
+                        Point3d finalLocalPt = new Point3d(localPt.X, localPt.Y, localProjectedPt.Z);
+
+                        // E. Berechneten Punkt zurück in Weltkoordinaten transformieren
+                        Point3d worldProjectedPt = finalLocalPt.TransformBy(blockTransform);
+
+                        // F. Neuen Punkt erstellen und hinzufügen
+                        var newPoint = new DBPoint(worldProjectedPt)
+                        {
+                            Layer = targetLayer,
+                            ColorIndex = 256 // VonLayer
+                        };
+
+                        modelSpace.AppendEntity(newPoint);
+                        tr.AddNewlyCreatedDBObject(newPoint, true);
+                        counter++;
+                    }
+
+                    tr.Commit();
+                    ed.WriteMessage($"\nAEC1023: {counter} Punkte erfolgreich REIN IN Z-RICHTUNG auf Layer '{targetLayer}' projiziert.");
+                }
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -163,7 +163,7 @@
             LBL0225.Name = "LBL0225";
             LBL0225.Size = new Size(370, 25);
             LBL0225.TabIndex = 122;
-            LBL0225.Text = "Block Append Entities AutoUpdate";
+            LBL0225.Text = "zzz";
             // 
             // LBL0224
             // 
@@ -173,7 +173,7 @@
             LBL0224.Name = "LBL0224";
             LBL0224.Size = new Size(370, 25);
             LBL0224.TabIndex = 121;
-            LBL0224.Text = "Project Points in Model Space";
+            LBL0224.Text = "Block Append Entities AutoUpdate";
             // 
             // LBL0223
             // 
@@ -183,7 +183,7 @@
             LBL0223.Name = "LBL0223";
             LBL0223.Size = new Size(370, 25);
             LBL0223.TabIndex = 120;
-            LBL0223.Text = "P0000 BLK Text > SOLID verlegen";
+            LBL0223.Text = "Project Points in Model Space";
             // 
             // LBL0222
             // 
@@ -193,7 +193,7 @@
             LBL0222.Name = "LBL0222";
             LBL0222.Size = new Size(370, 25);
             LBL0222.TabIndex = 119;
-            LBL0222.Text = "P0000 BLK Text > SOLID wählen";
+            LBL0222.Text = "P0000 BLK Text > SOLID verlegen";
             // 
             // LBL0221
             // 
@@ -306,7 +306,7 @@
             Lbl0022.Name = "Lbl0022";
             Lbl0022.Size = new Size(45, 25);
             Lbl0022.TabIndex = 108;
-            Lbl0022.Text = "0022";
+            Lbl0022.Text = "1022";
             // 
             // Lbl0024
             // 
@@ -326,7 +326,7 @@
             Lbl0021.Name = "Lbl0021";
             Lbl0021.Size = new Size(45, 25);
             Lbl0021.TabIndex = 106;
-            Lbl0021.Text = "0021";
+            Lbl0021.Text = "1021";
             // 
             // Txt0301
             // 
@@ -357,7 +357,7 @@
             Lbl0204.Name = "Lbl0204";
             Lbl0204.Size = new Size(370, 25);
             Lbl0204.TabIndex = 103;
-            Lbl0204.Text = "Centroit 2D-Surface ( planar )";
+            Lbl0204.Text = "Centroit 2D-Fläche planar";
             Lbl0204.Click += Lbl0204_Click;
             // 
             // Lbl0205
@@ -368,7 +368,7 @@
             Lbl0205.Name = "Lbl0205";
             Lbl0205.Size = new Size(370, 25);
             Lbl0205.TabIndex = 102;
-            Lbl0205.Text = "Centroit 3D-Solid";
+            Lbl0205.Text = "Centroit 3D-Volumenkörper";
             // 
             // Lbl0206
             // 
@@ -538,7 +538,7 @@
             Lbl0020.Name = "Lbl0020";
             Lbl0020.Size = new Size(45, 25);
             Lbl0020.TabIndex = 85;
-            Lbl0020.Text = "0020";
+            Lbl0020.Text = "1020";
             // 
             // Lbl0019
             // 
