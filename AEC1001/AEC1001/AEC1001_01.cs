@@ -6,35 +6,22 @@
 
 
 
-// 20260825-1000 #~~~2~~~~•~~~~3~~~~•~~~~4~~~~•~~~~5~~~~•~~~~6~~~~•~~~~7~~~~•~~~~H~~~~•~~~~9~~~~•~~~~0~~~~•~~~~1~~~~•~~~~Q
+// 20260826-1800 #~~~2~~~~•~~~~3~~~~•~~~~4~~~~•~~~~5~~~~•~~~~6~~~~•~~~~7~~~~•~~~~H~~~~•~~~~9~~~~•~~~~0~~~~•~~~~1~~~~•~~~~Q
 
-// frmAEC1001                                                          #0001 Load
-// frmAEC1001                                                          #0002 AEC0001
-// frmAEC1001                                                          #0003 SUB0002
-// frmAEC1001                                                          #0004 SUB0004
-// frmAEC1001                                                          #0005 Assemblys Interop
-// frmAEC1001                                                          #0006 SUB0005
-// frmAEC1001                                                          #0007 SUB0006
-// frmAEC1001                                                          #0008 SUB0007
-// frmAEC1001                                                          #0009 SUB0008
-// frmAEC1001                                                          #0010 SUB0009
-// frmAEC1001                                                          #0011 SUB0010
-// frmAEC1001                                                          #0012 SUB0011
-// frmAEC1001                                                          #0013 SUB0012
-// frmAEC1001                                                          #0014 AEC0014
-// frmAEC1001                                                          #0015 AEC0015
-// frmAEC1001                                                          #0016 AEC0016
-// frmAEC1001                                                          #0017 Leer
-// frmAEC1001                                                          #0018 Leer
-// frmAEC1001                                                          #0019 Leer
-// frmAEC1001                                                          #0020 AEC0020
-// frmAEC1001                                                          #0021 AEC0021
-// frmAEC1001                                                          #0022 AEC0022
-// frmAEC1001                                                          #0023 AEC0023
-// frmAEC1001                                                          #0024 Leer
-// frmAEC1001                                                          #0025 PointContainer2D
-// frmAEC1001                                                          #0026 Module AecHelper
-// frmAEC1001                                                          #0027 PointContainer
+// frmAEC1001_01                                                       #1000 Load
+// frmAEC1001_01                                                       #1001 AEC1001
+// frmAEC1001_01                                                       #1002 AEC1002
+// frmAEC1001_01                                                       #1003 AEC1003
+// frmAEC1001_01                                                       #1004 AEC1004
+// frmAEC1001_01                                                       #1005 AEC1005
+
+
+// frmAEC1001_01                                                       #1012 AEC1012
+
+// frmAEC1001_01                                                       #1014 AEC1014
+
+// frmAEC1001_01                                                       #1020 AEC1020
+
 
 
 
@@ -52,6 +39,9 @@ using System.Windows.Forms;
 using AcOpenMode = Autodesk.AutoCAD.DatabaseServices.OpenMode;
 using Application = Autodesk.AutoCAD.ApplicationServices.Application; // Mehrdeutigkeit auflösen
 using WinIO = System.IO;
+
+// Löst die Mehrdeutigkeit mit System.IO oder VB-Konstanten auf:
+using OpenMode = Autodesk.AutoCAD.DatabaseServices.OpenMode;
 
 
 
@@ -87,7 +77,7 @@ namespace AEC1001
 
 
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
-        // frmAEC1001                                                          #1001 Load
+        // frmAEC1001                                                          #1000 Load
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
 
 
@@ -111,7 +101,7 @@ namespace AEC1001
 
 
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
-        // frmAEC1001_01                                                       #0001 AEC1001
+        // frmAEC1001_01                                                       #1001 AEC1001
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
 
 
@@ -157,7 +147,7 @@ namespace AEC1001
 
 
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
-        // frmAEC1001_01                                                       #0002 AEC1002
+        // frmAEC1001_01                                                       #1002 AEC1002
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
 
 
@@ -230,13 +220,13 @@ namespace AEC1001
 
 
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
-        // frmAEC1001_01                                                       #0003 AEC1003
+        // frmAEC1001_01                                                       #1003 AEC1003
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
 
 
 
 
-        // Layer 0 aktuell
+        // LayerNull [0] aktuell
 
 
         [CommandMethod("AEC1003")]
@@ -303,83 +293,18 @@ namespace AEC1001
 
 
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
-        // frmAEC1001_01                                                       #0004 AEC1004
+        // frmAEC1001_01                                                       #1005 AEC1004
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
 
 
 
 
-        // Diese Routine ermittelt vollautomatisch den mathematischen Schwerpunkt (Centroid) eines angeklickten 3D-Volumenkörpers
-        // und platziert an genau dieser Koordinate ein AutoCAD-Punkt-Objekt (DBPoint).
+        // Die Routine AEC1004 ermittelt vollautomatisch den mathematischen Schwerpunkt (Centroid) einer ausgewählten Region oder
+        // planaren Oberfläche (PlaneSurface) und platziert an dieser Position ein AutoCAD-Punkt-Objekt (DBPoint).
 
 
         [CommandMethod("AEC1004")]
         public void AEC1004()
-        {
-            Document? doc = Application.DocumentManager.MdiActiveDocument;
-            if (doc == null) return;
-
-            Database db = doc.Database;
-            Editor ed = doc.Editor;
-
-            // 1. Filter für die Auswahl definieren (Nur 3D-Solids zulassen) - KORREKTUR: \n statt Constants.vbLf
-            PromptEntityOptions options = new("\nWählen Sie einen Volumenkörper (3D-Solid):");
-            options.SetRejectMessage("Ausgewähltes Objekt ist kein Volumenkörper.");
-            options.AddAllowedClass(typeof(Solid3d), true);
-
-            // 2. Objekt vom Benutzer auswählen lassen
-            PromptEntityResult result = ed.GetEntity(options);
-            if (result.Status != PromptStatus.OK) return;
-
-            // Modernes 'using' ohne geschweifte Klammern für die Transaktion
-            using var tr = db.TransactionManager.StartTransaction();
-            try
-            {
-                // Volumenkörper öffnen - KORREKTUR: Eindeutiger OpenMode-Pfad
-                if (tr.GetObject(result.ObjectId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead) is not Solid3d solid) return;
-
-                // 4. Schwerpunkt (Centroid) auslesen
-                Point3d centroid = solid.MassProperties.Centroid;
-
-                // 5. Aktuellen Space öffnen - KORREKTUR: Eindeutiger OpenMode-Pfad
-                if (tr.GetObject(db.CurrentSpaceId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForWrite) is not BlockTableRecord blockTableRec) return;
-
-                // 6. Neues AutoCAD-Punkt-Objekt am Schwerpunkt erstellen
-                using DBPoint acPoint = new(centroid);
-
-                // Punkt der Zeichnung hinzufügen
-                blockTableRec.AppendEntity(acPoint);
-                tr.AddNewlyCreatedDBObject(acPoint, true);
-
-                // Transaktion speichern
-                tr.Commit();
-
-                // Erfolgsmeldung - KORREKTUR: Modernes String-Format ($) und \n statt vbLf
-                ed.WriteMessage($"\n[AEC1004] Schwerpunkt gefunden bei X:{centroid.X:F2}, Y:{centroid.Y:F2}, Z:{centroid.Z:F2}. Punkt wurde erstellt.");
-            }
-            catch (System.Exception ex)
-            {
-                ed.WriteMessage($"\n[AEC1004] Fehler: {ex.Message}");
-                tr.Abort();
-            }
-        }
-
-
-
-
-        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
-        // frmAEC1001_01                                                       #0005 AEC1005
-        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
-
-        
-        
-        
-        // Die Routine AEC1005 ermittelt vollautomatisch den mathematischen Schwerpunkt (Centroid) einer ausgewählten Region oder
-        // planaren Oberfläche (PlaneSurface) und platziert an dieser Position ein AutoCAD-Punkt-Objekt (DBPoint).
-
-
-        [CommandMethod("AEC1005")]
-        public void AEC1005()
         {
             Document? doc = Application.DocumentManager.MdiActiveDocument;
             if (doc == null) return;
@@ -449,7 +374,7 @@ namespace AEC1001
                 // Sicherheitsabbruch, falls der Schwerpunkt nicht berechnet werden konnte
                 if (!schwerpunktGefunden)
                 {
-                    ed.WriteMessage("\n[AEC1005] Fehler: Schwerpunkt konnte nicht berechnet werden.");
+                    ed.WriteMessage("\n[AEC1004] Fehler: Schwerpunkt konnte nicht berechnet werden.");
                     return;
                 }
 
@@ -467,6 +392,71 @@ namespace AEC1001
                 tr.Commit();
 
                 // Erfolgsmeldung und Koordinatenausgabe in der Befehlszeile
+                ed.WriteMessage($"\n[AEC1004] Schwerpunkt gefunden bei X:{centroid.X:F2}, Y:{centroid.Y:F2}, Z:{centroid.Z:F2}. Punkt wurde erstellt.");
+            }
+            catch (System.Exception ex)
+            {
+                ed.WriteMessage($"\n[AEC1004] Fehler: {ex.Message}");
+                tr.Abort();
+            }
+        }
+
+
+
+
+        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+        // frmAEC1001_01                                                       #1005 AEC1005
+        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+
+
+
+
+        // Diese Routine ermittelt vollautomatisch den mathematischen Schwerpunkt (Centroid) eines angeklickten 3D-Volumenkörpers
+        // und platziert an genau dieser Koordinate ein AutoCAD-Punkt-Objekt (DBPoint).
+
+
+        [CommandMethod("AEC1005")]
+        public void AEC1005()
+        {
+            Document? doc = Application.DocumentManager.MdiActiveDocument;
+            if (doc == null) return;
+
+            Database db = doc.Database;
+            Editor ed = doc.Editor;
+
+            // 1. Filter für die Auswahl definieren (Nur 3D-Solids zulassen) - KORREKTUR: \n statt Constants.vbLf
+            PromptEntityOptions options = new("\nWählen Sie einen Volumenkörper (3D-Solid):");
+            options.SetRejectMessage("Ausgewähltes Objekt ist kein Volumenkörper.");
+            options.AddAllowedClass(typeof(Solid3d), true);
+
+            // 2. Objekt vom Benutzer auswählen lassen
+            PromptEntityResult result = ed.GetEntity(options);
+            if (result.Status != PromptStatus.OK) return;
+
+            // Modernes 'using' ohne geschweifte Klammern für die Transaktion
+            using var tr = db.TransactionManager.StartTransaction();
+            try
+            {
+                // Volumenkörper öffnen - KORREKTUR: Eindeutiger OpenMode-Pfad
+                if (tr.GetObject(result.ObjectId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForRead) is not Solid3d solid) return;
+
+                // 4. Schwerpunkt (Centroid) auslesen
+                Point3d centroid = solid.MassProperties.Centroid;
+
+                // 5. Aktuellen Space öffnen - KORREKTUR: Eindeutiger OpenMode-Pfad
+                if (tr.GetObject(db.CurrentSpaceId, Autodesk.AutoCAD.DatabaseServices.OpenMode.ForWrite) is not BlockTableRecord blockTableRec) return;
+
+                // 6. Neues AutoCAD-Punkt-Objekt am Schwerpunkt erstellen
+                using DBPoint acPoint = new(centroid);
+
+                // Punkt der Zeichnung hinzufügen
+                blockTableRec.AppendEntity(acPoint);
+                tr.AddNewlyCreatedDBObject(acPoint, true);
+
+                // Transaktion speichern
+                tr.Commit();
+
+                // Erfolgsmeldung - KORREKTUR: Modernes String-Format ($) und \n statt vbLf
                 ed.WriteMessage($"\n[AEC1005] Schwerpunkt gefunden bei X:{centroid.X:F2}, Y:{centroid.Y:F2}, Z:{centroid.Z:F2}. Punkt wurde erstellt.");
             }
             catch (System.Exception ex)
@@ -480,7 +470,7 @@ namespace AEC1001
 
 
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
-        // frmAEC1001_01                                                       #0012 AEC1012
+        // frmAEC1001_01                                                       #1012 AEC1012
         // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
 
 
@@ -561,23 +551,23 @@ namespace AEC1001
                 ed.WriteMessage($"\n[AEC1012] Fehler: {ex.Message}");
             }
         }
-    
-
-
-
-    // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
-    // frmAEC1001_01                                                       #0014 AEC1014
-    // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
 
 
 
 
-    // 3D-Align für Volumenkörper: Einmalig 3 Basispunkte wählen dann 3 Zielpunkte wählen, Körper wird kopiert und auf Ziel-
-    // punkten abgelegt. Anschließend wieder drei Zielpunkte wählen, Körper wird kopiert und auf Zielpunkten abgelegt ...
+        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+        // frmAEC1001_01                                                       #1014 AEC1014
+        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
 
 
-    // 20260826-1600 #~~~2~~~~•~~~~3~~~~•~~~~4~~~~•~~~~5~~~~•~~~~6~~~~•~~~~7~~~~•~~~~H~~~~•~~~~9~~~~•~~~~0~~~~•~~~~1~~~~•~~~~Q
-    private class SolidAlignJig : DrawJig
+
+
+        // 3D-Align für Volumenkörper: Einmalig 3 Basispunkte wählen dann 3 Zielpunkte wählen, Körper wird kopiert und auf Ziel-
+        // punkten abgelegt. Anschließend wieder drei Zielpunkte wählen, Körper wird kopiert und auf Zielpunkten abgelegt ...
+
+
+        // 20260826-1600 #~~~2~~~~•~~~~3~~~~•~~~~4~~~~•~~~~5~~~~•~~~~6~~~~•~~~~7~~~~•~~~~H~~~~•~~~~9~~~~•~~~~0~~~~•~~~~1~~~~•~~~~Q
+        private class SolidAlignJig : DrawJig
         {
             private readonly Entity? _preview;
             private readonly Point3d _sOrg;
@@ -711,7 +701,7 @@ namespace AEC1001
 
 
             // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
-            // frmAEC1001_01                                                       #0020 AEC1020
+            // frmAEC1001_01                                                       #1020 AEC1020
             // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
 
 
@@ -820,8 +810,367 @@ namespace AEC1001
             }
         }
 
+        private void Lbl0204_Click(object sender, EventArgs e)
+        {
+
+        }
+
+
+
+
+
+        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+        // frmAEC1001_01                                                       #1021 AEC1021 Teil 1
+        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+
+
+
+
+        // 20260827-1600 #~~~2~~~~•~~~~3~~~~•~~~~4~~~~•~~~~5~~~~•~~~~6~~~~•~~~~7~~~~•~~~~H~~~~•~~~~9~~~~•~~~~0~~~~•~~~~1~~~~•~~~~Q
+
+
+
+
+
+        [CommandMethod("AEC1021")]
+        public void AEC1021()
+        {
+            Document doc = Application.DocumentManager.MdiActiveDocument;
+            Database db = doc.Database;
+            Editor ed = doc.Editor;
+
+            try
+            {
+                // =================================================================
+                // ASYNCHRONER TIMEOUT-DIALOG (WINFORMS)
+                // =================================================================
+
+                using (var infoForm = new System.Windows.Forms.Form())
+                  
+                {
+                    infoForm.Text = "AEC1021 " + new string(' ', 18) + " 6 s" + new string(' ', 18) + " Information";
+                    infoForm.Size = new System.Drawing.Size(480, 160);
+                    infoForm.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+                    infoForm.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+                    infoForm.MaximizeBox = false;
+                    infoForm.MinimizeBox = false;
+                    infoForm.ShowInTaskbar = false;
+
+                    var lblText = new System.Windows.Forms.Label
+                    {
+                        // Fügt eine Leerzeile ganz am Anfang ein und setzt den Text auf 6 Sekunden
+                        Text = Environment.NewLine + 
+                               $"Ursprung Aktuelles BKS   X - R i c h t u n g   !{Environment.NewLine}" +
+                               $"Knotennummerierung   1   3   5   7   9   …",
+                        Dock = System.Windows.Forms.DockStyle.Fill,
+                        TextAlign = System.Drawing.ContentAlignment.TopCenter, // Auf TopCenter geändert, damit die Leerzeile oben wirkt
+                        Font = new System.Drawing.Font("Segoe UI", 10, System.Drawing.FontStyle.Regular)
+                    };
+                    infoForm.Controls.Add(lblText);
+
+                    // WICHTIG: Den Timer auf 6 Sekunden (6000 Millisekunden) anpassen
+                    var formTimer = new System.Windows.Forms.Timer { Interval = 6000 };
+
+                    formTimer.Tick += (sender, e) => { formTimer.Stop(); infoForm.Close(); formTimer.Dispose(); };
+                    formTimer.Start();
+
+                    infoForm.ShowDialog(new AutoCADWindowWrapper(Application.MainWindow.Handle));
+                }
+
+                // 1. Abfrage der Texthöhe mit Keyword-Validierung
+                double finaleHoehe = 0.035;
+                var pdo = new PromptDoubleOptions($"\nAbsolute Texthöhe eingeben <{finaleHoehe}>:")
+                {
+                    AllowNone = true,
+                    AllowNegative = false,
+                    AllowZero = false
+                };
+
+                PromptDoubleResult pdr = ed.GetDouble(pdo);
+                if (pdr.Status == PromptStatus.OK) finaleHoehe = pdr.Value;
+                else if (pdr.Status == PromptStatus.Cancel) return;
+
+                // 2. Auswahl der Blockreferenz
+                var peoBlock = new PromptEntityOptions("\nBlock auswählen, der die Polylinien und Punkte enthält:");
+                peoBlock.SetRejectMessage("Es muss eine Blockreferenz sein.");
+                peoBlock.AddAllowedClass(typeof(BlockReference), true);
+
+                PromptEntityResult perBlock = ed.GetEntity(peoBlock);
+                if (perBlock.Status != PromptStatus.OK) return;
+
+                Matrix3d bksMatrix = ed.CurrentUserCoordinateSystem;
+                Matrix3d weltInBksMatrix = bksMatrix.Inverse();
+
+                using (Transaction tr = db.TransactionManager.StartTransaction())
+                {
+                    var blkRef = (BlockReference)tr.GetObject(perBlock.ObjectId, OpenMode.ForRead);
+                    ObjectId blockLayerId = blkRef.LayerId;
+                    var blockDef = (BlockTableRecord)tr.GetObject(blkRef.BlockTableRecord, OpenMode.ForRead);
+                    Matrix3d blockTransform = blkRef.BlockTransform;
+
+                    var allePunkteWcs = new List<Point3d>();
+                    var gefundenePolylinienWcs = new List<Curve>();
+
+                    foreach (ObjectId id in blockDef)
+                    {
+                        Entity ent = (Entity)tr.GetObject(id, OpenMode.ForRead);
+
+                        if (ent is DBPoint p)
+                        {
+                            allePunkteWcs.Add(p.Position.TransformBy(blockTransform));
+                        }
+                        else if (ent is Polyline || ent is Polyline2d || ent is Polyline3d)
+                        {
+                            Curve wcsKurve = (Curve)ent.Clone();
+                            wcsKurve.TransformBy(blockTransform);
+                            gefundenePolylinienWcs.Add(wcsKurve);
+                        }
+                    }
+
+                    // Fehlerprüfung 1: Kurvenanzahl prüfen
+                    if (gefundenePolylinienWcs.Count != 2)
+                    {
+                        ed.WriteMessage($"\nFehler: Der Block muss EXAKT zwei Polylinien enthalten! (Gefunden: {gefundenePolylinienWcs.Count})");
+                        foreach (Curve c in gefundenePolylinienWcs) c.Dispose();
+                        tr.Abort();
+                        return;
+                    }
+
+                    // Fehlerprüfung 2: Sicherstellen, dass Punkte existieren
+                    if (allePunkteWcs.Count == 0)
+                    {
+                        ed.WriteMessage("\nFehler: Der ausgewählte Block enthält keine Punkt-Objekte!");
+                        foreach (Curve c in gefundenePolylinienWcs) c.Dispose();
+                        tr.Abort();
+                        return;
+                    }
+
+                    Curve polyA = gefundenePolylinienWcs[0];
+                    Curve polyB = gefundenePolylinienWcs[1];
+
+                    var punkteA_Raw = new List<(Point3d Pt, double X)>();
+                    var punkteB_Raw = new List<(Point3d Pt, double X)>();
+
+                    foreach (Point3d ptWcs in allePunkteWcs)
+                    {
+                        try
+                        {
+                            double distA = ptWcs.DistanceTo(polyA.GetClosestPointTo(ptWcs, false));
+                            double distB = ptWcs.DistanceTo(polyB.GetClosestPointTo(ptWcs, false));
+                            double bksX = ptWcs.TransformBy(weltInBksMatrix).X;
+
+                            if (distA <= distB) punkteA_Raw.Add((ptWcs, bksX));
+                            else punkteB_Raw.Add((ptWcs, bksX));
+                        }
+                        catch { }
+                    }
+
+                    var punkteA = punkteA_Raw.OrderBy(p => p.X).Select(p => p.Pt).ToList();
+                    var punkteB = punkteB_Raw.OrderBy(p => p.X).Select(p => p.Pt).ToList();
+
+                    // Ausfallsichere Berechnung der Y-Mittelwerte
+                    double avgYA = punkteA.Count > 0 ? punkteA.Average(p => p.TransformBy(weltInBksMatrix).Y) : 0.0;
+                    double avgYB = punkteB.Count > 0 ? punkteB.Average(p => p.TransformBy(weltInBksMatrix).Y) : 0.0;
+
+                    var basisPunkte = avgYA <= avgYB ? punkteA : punkteB;
+                    var entferntePunkte = avgYA <= avgYB ? punkteB : punkteA;
+                    Curve basisPoly = avgYA <= avgYB ? polyA : polyB;
+                    Curve entferntPoly = avgYA <= avgYB ? polyB : polyA;
+
+                    var currentSpace = (BlockTableRecord)tr.GetObject(db.CurrentSpaceId, OpenMode.ForWrite);
+
+                    // Texte schreiben: Basis-Linie (Ungerade)
+                    int zaehlerBasis = 1;
+                    foreach (var weltPos in basisPunkte)
+                    {
+                        double rotWinkel = BerechneKurvenWinkel(basisPoly, weltPos, bksMatrix);
+                        ErstelleEchtenText(currentSpace, tr, db, weltPos, zaehlerBasis.ToString(), finaleHoehe, rotWinkel, blockLayerId);
+                        zaehlerBasis += 2;
+                    }
+
+                    // Texte schreiben: Entfernte Linie (Gerade)
+                    int zaehlerEntfernt = 2;
+                    foreach (var weltPos in entferntePunkte)
+                    {
+                        double rotWinkel = BerechneKurvenWinkel(entferntPoly, weltPos, bksMatrix);
+                        ErstelleEchtenText(currentSpace, tr, db, weltPos, zaehlerEntfernt.ToString(), finaleHoehe, rotWinkel, blockLayerId);
+                        zaehlerEntfernt += 2;
+                    }
+
+                    polyA.Dispose();
+                    polyB.Dispose();
+
+                    tr.Commit();
+                }
+
+                // Bildschirm regenerieren, um die neuen blauen Texte sofort sichtbar zu machen
+                ed.Regen();
+            }
+            catch (System.Exception ex)
+            {
+                ed.WriteMessage($"\nFehler im Befehl AEC1021: {ex.Message}");
+            }
+        }
+    
+    
+
+
+
+    // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+    // frmAEC1001_01                                                       #1021 AEC1021 Teil 2
+    // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+
+
+ 
+       
+            private double BerechneKurvenWinkel(Curve kurve, Point3d weltPunkt, Matrix3d bksMatrix)
+        {
+            try
+            {
+                Point3d ptAufKurve = kurve.GetClosestPointTo(weltPunkt, false);
+                Vector3d tangente = kurve.GetFirstDerivative(ptAufKurve);
+                return bksMatrix.CoordinateSystem3d.Xaxis.GetAngleTo(tangente, bksMatrix.CoordinateSystem3d.Zaxis);
+            }
+            catch
+            {
+                return 0.0;
+            }
+        }
+
+        private void ErstelleEchtenText(BlockTableRecord btr, Transaction tr, Database db, Point3d position, string inhalt, double hoehe, double winkel, ObjectId layerId)
+        {
+            var text = new DBText
+            {
+                Position = position,
+                TextString = inhalt,
+                Height = hoehe,
+                Rotation = winkel,
+                LayerId = layerId,
+                Justify = AttachmentPoint.MiddleCenter,
+                AlignmentPoint = position
+            };
+            text.SetDatabaseDefaults(db);
+
+            // Reines AutoCAD-Blau erzwingen
+            text.ColorIndex = 5;
+
+            btr.AppendEntity(text);
+            tr.AddNewlyCreatedDBObject(text, true);
+        }
     }
 }
+
+
+        public class AutoCADWindowWrapper : System.Windows.Forms.IWin32Window
+        {
+            public IntPtr Handle { get; }
+            public AutoCADWindowWrapper(IntPtr handle) => Handle = handle;
+        }
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+        // frmAEC1001_01                                                       #1022 AEC1022
+        // ====•===1====•====2====•====3====•====4====•====5====•====6====•====7====•====H====•====9====•====0====•====1====•====Q
+
+
+
+
+// 20260827-1600 #~~~2~~~~•~~~~3~~~~•~~~~4~~~~•~~~~5~~~~•~~~~6~~~~•~~~~7~~~~•~~~~H~~~~•~~~~9~~~~•~~~~0~~~~•~~~~1~~~~•~~~~Q
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -98,7 +98,7 @@
             // 
             Txt0302.BorderStyle = BorderStyle.None;
             Txt0302.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            Txt0302.Location = new Point(405, 80);
+            Txt0302.Location = new Point(410, 80);
             Txt0302.Multiline = true;
             Txt0302.Name = "Txt0302";
             Txt0302.Size = new Size(25, 25);
@@ -109,9 +109,9 @@
             // 
             LBL0230.FlatStyle = FlatStyle.Flat;
             LBL0230.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            LBL0230.Location = new Point(55, 920);
+            LBL0230.Location = new Point(60, 920);
             LBL0230.Name = "LBL0230";
-            LBL0230.Size = new Size(380, 25);
+            LBL0230.Size = new Size(370, 25);
             LBL0230.TabIndex = 127;
             LBL0230.Text = "zzz";
             // 
@@ -119,9 +119,9 @@
             // 
             LBL0229.FlatStyle = FlatStyle.Flat;
             LBL0229.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            LBL0229.Location = new Point(55, 890);
+            LBL0229.Location = new Point(60, 890);
             LBL0229.Name = "LBL0229";
-            LBL0229.Size = new Size(380, 25);
+            LBL0229.Size = new Size(370, 25);
             LBL0229.TabIndex = 126;
             LBL0229.Text = "zzz";
             // 
@@ -129,9 +129,9 @@
             // 
             LBL0228.FlatStyle = FlatStyle.Flat;
             LBL0228.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            LBL0228.Location = new Point(55, 860);
+            LBL0228.Location = new Point(60, 860);
             LBL0228.Name = "LBL0228";
-            LBL0228.Size = new Size(380, 25);
+            LBL0228.Size = new Size(370, 25);
             LBL0228.TabIndex = 125;
             LBL0228.Text = "zzz";
             // 
@@ -139,9 +139,9 @@
             // 
             LBL0227.FlatStyle = FlatStyle.Flat;
             LBL0227.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            LBL0227.Location = new Point(55, 830);
+            LBL0227.Location = new Point(60, 830);
             LBL0227.Name = "LBL0227";
-            LBL0227.Size = new Size(380, 25);
+            LBL0227.Size = new Size(370, 25);
             LBL0227.TabIndex = 124;
             LBL0227.Text = "zzz";
             // 
@@ -149,9 +149,9 @@
             // 
             LBL0226.FlatStyle = FlatStyle.Flat;
             LBL0226.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            LBL0226.Location = new Point(55, 800);
+            LBL0226.Location = new Point(60, 800);
             LBL0226.Name = "LBL0226";
-            LBL0226.Size = new Size(380, 25);
+            LBL0226.Size = new Size(370, 25);
             LBL0226.TabIndex = 123;
             LBL0226.Text = "zzz";
             // 
@@ -159,9 +159,9 @@
             // 
             LBL0225.FlatStyle = FlatStyle.Flat;
             LBL0225.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            LBL0225.Location = new Point(55, 770);
+            LBL0225.Location = new Point(60, 770);
             LBL0225.Name = "LBL0225";
-            LBL0225.Size = new Size(380, 25);
+            LBL0225.Size = new Size(370, 25);
             LBL0225.TabIndex = 122;
             LBL0225.Text = "Block Append Entities AutoUpdate";
             // 
@@ -169,9 +169,9 @@
             // 
             LBL0224.FlatStyle = FlatStyle.Flat;
             LBL0224.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            LBL0224.Location = new Point(55, 740);
+            LBL0224.Location = new Point(60, 740);
             LBL0224.Name = "LBL0224";
-            LBL0224.Size = new Size(380, 25);
+            LBL0224.Size = new Size(370, 25);
             LBL0224.TabIndex = 121;
             LBL0224.Text = "Project Points in Model Space";
             // 
@@ -179,9 +179,9 @@
             // 
             LBL0223.FlatStyle = FlatStyle.Flat;
             LBL0223.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            LBL0223.Location = new Point(55, 710);
+            LBL0223.Location = new Point(60, 710);
             LBL0223.Name = "LBL0223";
-            LBL0223.Size = new Size(380, 25);
+            LBL0223.Size = new Size(370, 25);
             LBL0223.TabIndex = 120;
             LBL0223.Text = "P0000 BLK Text > SOLID verlegen";
             // 
@@ -189,9 +189,9 @@
             // 
             LBL0222.FlatStyle = FlatStyle.Flat;
             LBL0222.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            LBL0222.Location = new Point(55, 680);
+            LBL0222.Location = new Point(60, 680);
             LBL0222.Name = "LBL0222";
-            LBL0222.Size = new Size(380, 25);
+            LBL0222.Size = new Size(370, 25);
             LBL0222.TabIndex = 119;
             LBL0222.Text = "P0000 BLK Text > SOLID wählen";
             // 
@@ -199,9 +199,9 @@
             // 
             LBL0221.FlatStyle = FlatStyle.Flat;
             LBL0221.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            LBL0221.Location = new Point(55, 650);
+            LBL0221.Location = new Point(60, 650);
             LBL0221.Name = "LBL0221";
-            LBL0221.Size = new Size(380, 25);
+            LBL0221.Size = new Size(370, 25);
             LBL0221.TabIndex = 118;
             LBL0221.Text = "P0000 BLK Text > Erstellen";
             // 
@@ -213,7 +213,7 @@
             Lbl0101.Name = "Lbl0101";
             Lbl0101.Size = new Size(45, 25);
             Lbl0101.TabIndex = 117;
-            Lbl0101.Text = "0001";
+            Lbl0101.Text = "1001";
             // 
             // But0001
             // 
@@ -332,7 +332,7 @@
             // 
             Txt0301.BorderStyle = BorderStyle.None;
             Txt0301.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            Txt0301.Location = new Point(405, 50);
+            Txt0301.Location = new Point(410, 50);
             Txt0301.Multiline = true;
             Txt0301.Name = "Txt0301";
             Txt0301.Size = new Size(25, 25);
@@ -343,9 +343,9 @@
             // 
             Lbl0203.FlatStyle = FlatStyle.Flat;
             Lbl0203.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            Lbl0203.Location = new Point(55, 110);
+            Lbl0203.Location = new Point(60, 110);
             Lbl0203.Name = "Lbl0203";
-            Lbl0203.Size = new Size(380, 25);
+            Lbl0203.Size = new Size(370, 25);
             Lbl0203.TabIndex = 104;
             Lbl0203.Text = "LayerNull";
             // 
@@ -353,29 +353,30 @@
             // 
             Lbl0204.FlatStyle = FlatStyle.Flat;
             Lbl0204.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            Lbl0204.Location = new Point(55, 140);
+            Lbl0204.Location = new Point(60, 140);
             Lbl0204.Name = "Lbl0204";
-            Lbl0204.Size = new Size(380, 25);
+            Lbl0204.Size = new Size(370, 25);
             Lbl0204.TabIndex = 103;
-            Lbl0204.Text = "SUB0003 Schwerpunkt ( Point )";
+            Lbl0204.Text = "Centroit 2D-Surface ( planar )";
+            Lbl0204.Click += Lbl0204_Click;
             // 
             // Lbl0205
             // 
             Lbl0205.FlatStyle = FlatStyle.Flat;
             Lbl0205.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            Lbl0205.Location = new Point(55, 170);
+            Lbl0205.Location = new Point(60, 170);
             Lbl0205.Name = "Lbl0205";
-            Lbl0205.Size = new Size(380, 25);
+            Lbl0205.Size = new Size(370, 25);
             Lbl0205.TabIndex = 102;
-            Lbl0205.Text = "SUB0004 Schwerpunkt ";
+            Lbl0205.Text = "Centroit 3D-Solid";
             // 
             // Lbl0206
             // 
             Lbl0206.FlatStyle = FlatStyle.Flat;
             Lbl0206.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            Lbl0206.Location = new Point(55, 200);
+            Lbl0206.Location = new Point(60, 200);
             Lbl0206.Name = "Lbl0206";
-            Lbl0206.Size = new Size(380, 25);
+            Lbl0206.Size = new Size(370, 25);
             Lbl0206.TabIndex = 101;
             Lbl0206.Text = "zzz";
             // 
@@ -383,9 +384,9 @@
             // 
             Lbl0207.FlatStyle = FlatStyle.Flat;
             Lbl0207.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            Lbl0207.Location = new Point(55, 230);
+            Lbl0207.Location = new Point(60, 230);
             Lbl0207.Name = "Lbl0207";
-            Lbl0207.Size = new Size(380, 25);
+            Lbl0207.Size = new Size(370, 25);
             Lbl0207.TabIndex = 100;
             Lbl0207.Text = "zzz";
             // 
@@ -393,9 +394,9 @@
             // 
             Lbl0208.FlatStyle = FlatStyle.Flat;
             Lbl0208.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            Lbl0208.Location = new Point(55, 260);
+            Lbl0208.Location = new Point(60, 260);
             Lbl0208.Name = "Lbl0208";
-            Lbl0208.Size = new Size(380, 25);
+            Lbl0208.Size = new Size(370, 25);
             Lbl0208.TabIndex = 99;
             Lbl0208.Text = "zzz";
             // 
@@ -403,9 +404,9 @@
             // 
             Lbl0209.FlatStyle = FlatStyle.Flat;
             Lbl0209.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            Lbl0209.Location = new Point(55, 290);
+            Lbl0209.Location = new Point(60, 290);
             Lbl0209.Name = "Lbl0209";
-            Lbl0209.Size = new Size(380, 25);
+            Lbl0209.Size = new Size(370, 25);
             Lbl0209.TabIndex = 98;
             Lbl0209.Text = "zzz";
             // 
@@ -413,9 +414,9 @@
             // 
             LBL0210.FlatStyle = FlatStyle.Flat;
             LBL0210.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            LBL0210.Location = new Point(55, 320);
+            LBL0210.Location = new Point(60, 320);
             LBL0210.Name = "LBL0210";
-            LBL0210.Size = new Size(380, 25);
+            LBL0210.Size = new Size(370, 25);
             LBL0210.TabIndex = 97;
             LBL0210.Text = "zzz";
             // 
@@ -423,9 +424,9 @@
             // 
             LBL0211.FlatStyle = FlatStyle.Flat;
             LBL0211.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            LBL0211.Location = new Point(55, 350);
+            LBL0211.Location = new Point(60, 350);
             LBL0211.Name = "LBL0211";
-            LBL0211.Size = new Size(380, 25);
+            LBL0211.Size = new Size(370, 25);
             LBL0211.TabIndex = 96;
             LBL0211.Text = "zzz";
             // 
@@ -433,9 +434,9 @@
             // 
             LBL0212.FlatStyle = FlatStyle.Flat;
             LBL0212.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            LBL0212.Location = new Point(55, 380);
+            LBL0212.Location = new Point(60, 380);
             LBL0212.Name = "LBL0212";
-            LBL0212.Size = new Size(380, 25);
+            LBL0212.Size = new Size(370, 25);
             LBL0212.TabIndex = 95;
             LBL0212.Text = "3D-Align DBText/MText ";
             // 
@@ -443,9 +444,9 @@
             // 
             LBL0213.FlatStyle = FlatStyle.Flat;
             LBL0213.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            LBL0213.Location = new Point(55, 410);
+            LBL0213.Location = new Point(60, 410);
             LBL0213.Name = "LBL0213";
-            LBL0213.Size = new Size(380, 25);
+            LBL0213.Size = new Size(370, 25);
             LBL0213.TabIndex = 94;
             LBL0213.Text = "zzz";
             // 
@@ -453,9 +454,9 @@
             // 
             LBL0214.FlatStyle = FlatStyle.Flat;
             LBL0214.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            LBL0214.Location = new Point(55, 440);
+            LBL0214.Location = new Point(60, 440);
             LBL0214.Name = "LBL0214";
-            LBL0214.Size = new Size(380, 25);
+            LBL0214.Size = new Size(370, 25);
             LBL0214.TabIndex = 93;
             LBL0214.Text = "3D-Align";
             // 
@@ -463,9 +464,9 @@
             // 
             LBL0215.FlatStyle = FlatStyle.Flat;
             LBL0215.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            LBL0215.Location = new Point(55, 470);
+            LBL0215.Location = new Point(60, 470);
             LBL0215.Name = "LBL0215";
-            LBL0215.Size = new Size(380, 25);
+            LBL0215.Size = new Size(370, 25);
             LBL0215.TabIndex = 92;
             LBL0215.Text = "zzz";
             // 
@@ -473,9 +474,9 @@
             // 
             LBL0216.FlatStyle = FlatStyle.Flat;
             LBL0216.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            LBL0216.Location = new Point(55, 500);
+            LBL0216.Location = new Point(60, 500);
             LBL0216.Name = "LBL0216";
-            LBL0216.Size = new Size(380, 25);
+            LBL0216.Size = new Size(370, 25);
             LBL0216.TabIndex = 91;
             LBL0216.Text = "zzz";
             // 
@@ -483,9 +484,9 @@
             // 
             LBL0217.FlatStyle = FlatStyle.Flat;
             LBL0217.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            LBL0217.Location = new Point(55, 530);
+            LBL0217.Location = new Point(60, 530);
             LBL0217.Name = "LBL0217";
-            LBL0217.Size = new Size(380, 25);
+            LBL0217.Size = new Size(370, 25);
             LBL0217.TabIndex = 90;
             LBL0217.Text = "zzz";
             // 
@@ -493,9 +494,9 @@
             // 
             LBL0218.FlatStyle = FlatStyle.Flat;
             LBL0218.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            LBL0218.Location = new Point(55, 560);
+            LBL0218.Location = new Point(60, 560);
             LBL0218.Name = "LBL0218";
-            LBL0218.Size = new Size(380, 25);
+            LBL0218.Size = new Size(370, 25);
             LBL0218.TabIndex = 89;
             LBL0218.Text = "zzz";
             // 
@@ -503,9 +504,9 @@
             // 
             LBL0219.FlatStyle = FlatStyle.Flat;
             LBL0219.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            LBL0219.Location = new Point(55, 590);
+            LBL0219.Location = new Point(60, 590);
             LBL0219.Name = "LBL0219";
-            LBL0219.Size = new Size(380, 25);
+            LBL0219.Size = new Size(370, 25);
             LBL0219.TabIndex = 88;
             LBL0219.Text = "zzz";
             // 
@@ -513,9 +514,9 @@
             // 
             LBL0220.FlatStyle = FlatStyle.Flat;
             LBL0220.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            LBL0220.Location = new Point(55, 620);
+            LBL0220.Location = new Point(60, 620);
             LBL0220.Name = "LBL0220";
-            LBL0220.Size = new Size(380, 25);
+            LBL0220.Size = new Size(370, 25);
             LBL0220.TabIndex = 87;
             LBL0220.Text = "P0000 BLK Text > Ein / Aus";
             // 
@@ -523,9 +524,9 @@
             // 
             Lbl0202.FlatStyle = FlatStyle.Flat;
             Lbl0202.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            Lbl0202.Location = new Point(55, 80);
+            Lbl0202.Location = new Point(60, 80);
             Lbl0202.Name = "Lbl0202";
-            Lbl0202.Size = new Size(380, 25);
+            Lbl0202.Size = new Size(370, 25);
             Lbl0202.TabIndex = 86;
             Lbl0202.Text = "LayerLeer";
             // 
@@ -664,11 +665,11 @@
             Lbl0201.BackColor = SystemColors.Control;
             Lbl0201.FlatStyle = FlatStyle.System;
             Lbl0201.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            Lbl0201.Location = new Point(55, 50);
+            Lbl0201.Location = new Point(60, 50);
             Lbl0201.Name = "Lbl0201";
-            Lbl0201.Size = new Size(345, 25);
+            Lbl0201.Size = new Size(340, 25);
             Lbl0201.TabIndex = 72;
-            Lbl0201.Text = "frmAEC1001_01 •~~~~2~~~~•~~~~3~~~~";
+            Lbl0201.Text = "AEC1001.exe ~~•~~~~2~~~~•~~~~3";
             // 
             // Lbl0107
             // 
